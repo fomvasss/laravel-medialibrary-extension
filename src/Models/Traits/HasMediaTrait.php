@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: fomvasss
- * Date: 06.01.19
- * Time: 18:48
- */
 
 namespace Fomvasss\MediaLibraryExtension\Models\Traits\HasMedia;
 
@@ -95,8 +89,6 @@ trait HasMediaTrait
      */
     public function defaultRegisterMediaConversions(Media $media = null)
     {
-        //$this->addMediaCollection('image')
-        //    ->singleFile();
         foreach (config('medialibrary-extension.default_conversions') as $conversionName => $params) {
             $this->addMediaConversion($conversionName)
                 ->quality($params['quantity'] ?? $this->getMediaQuality())

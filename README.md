@@ -76,6 +76,9 @@ class Article extends Model implements HasMedia
      */
     public function customMediaConversions(Media $media = null)
     {
+        $this->addMediaCollection('main')
+            ->singleFile();
+
         $this->addMediaConversion('table')
             ->format('jpg')->quality(93)
             ->fit('crop', 360, 257);

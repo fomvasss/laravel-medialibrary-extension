@@ -3,11 +3,10 @@
 return [
 
     /* -----------------------------------------------------------------
-     |  The default Model meta-tag
+     |  Medialibrary extension settings
      | -----------------------------------------------------------------
      */
-//    'filename_generator' => \Fomvasss\MediaLibraryExtension\FilenameGenerators\DefaultFileNameGenerator::class,
-    'filename_generator' => \App\MyMedianameGenerator::class,
+    'filename_generator' => \Fomvasss\MediaLibraryExtension\FilenameGenerators\DefaultFileNameGenerator::class,
 
     'default_img_quantity' => 75,
 

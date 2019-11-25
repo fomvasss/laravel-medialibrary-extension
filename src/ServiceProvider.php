@@ -11,7 +11,9 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
      */
     public function boot()
     {
-        $this->publishedConfig();
+        $this->publishes([
+            __DIR__.'/../config/medialibrary-extension.php' => config_path('medialibrary-extension.php')
+        ], 'config');
     }
 
     /**
@@ -29,11 +31,4 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
         $this->app->alias(MediaLibraryManager::class, 'medialibrary-manager');
     }
-
-    protected function publishedConfig()
-    {
-        $this->publishes([__DIR__.'/../config/medialibrary-extension.php' => config_path('medialibrary-extension.php')
-        ], 'config');
-    }
-
 }
