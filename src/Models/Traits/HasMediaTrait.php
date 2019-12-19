@@ -90,10 +90,12 @@ trait HasMediaTrait
     public function defaultRegisterMediaConversions(Media $media = null)
     {
         foreach (config('medialibrary-extension.default_conversions') as $conversionName => $params) {
-            $this->addMediaConversion($conversionName)
-                ->quality($params['quantity'] ?? $this->getMediaQuality())
-                ->crop($params['crop-method'] ?? 'crop-center', $params['width'] ?? 50, $params['height'] ?? 50)
-                ->performOnCollections(...$this->getPerformOnImageCollections($params['regex_perform_to_collections'] ?? null));
+            if (is_array($params) && count($params)) {
+                $this->addMediaConversion($conversionName)
+                    ->quality($params['quantity'] ?? $this->getMediaQuality())
+                    ->crop($params['crop-method'] ?? 'crop-center', $params['width'] ?? 50, $params['height'] ?? 50)
+                    ->performOnCollections(...$this->getPerformOnImageCollections($params['regex_perform_to_collections'] ?? null));
+            }
         }
     }
 

@@ -18,13 +18,6 @@ return [
             'height' => 100,
             'regex_perform_to_collections' => '/img|image|photo|gallery|scr/i',
         ],
-        'my' => [
-            'quantity' => 100,
-            'crop-method' => 'crop-center',
-            'width' => 200,
-            'height' => 200,
-            'regex_perform_to_collections' => '/img|image|photo|gallery|scr/i',
-        ],
     ],
 
     'field_suffixes' => [
