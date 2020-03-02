@@ -77,7 +77,7 @@ class MediaLibraryManager
             }
         }
 
-        $deletedSuffix = config('medialibrary-extension.field_suffixes.weight', '_deleted');
+        $deletedSuffix = config('medialibrary-extension.field_suffixes.deleted', '_deleted');
         if (($ids = $request->get($field . $deletedSuffix)) && is_array($ids)) {
             array_map(function($id) use ($entity) {
                 $id ? $entity->deleteMedia($id) : null;
@@ -103,7 +103,7 @@ class MediaLibraryManager
             $this->add($entity, $request->file($field), $field);
         }
 
-        $deletedSuffix = config('medialibrary-extension.field_suffixes.weight', '_deleted');
+        $deletedSuffix = config('medialibrary-extension.field_suffixes.deleted', '_deleted');
         if ($id = $request->get($field . $deletedSuffix)) {
             $entity->deleteMedia($id);
         }
