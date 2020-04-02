@@ -1,6 +1,6 @@
 <?php
 
-namespace Fomvasss\MediaLibraryExtension\Models\Traits\HasMedia;
+namespace Fomvasss\MediaLibraryExtension\Models\Traits;
 
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\Models\Media;

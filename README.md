@@ -35,11 +35,11 @@ php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServicePr
 
 Usage in Eloquent models trait
 
-```Fomvasss\MediaLibraryExtension\Models\Traits\HasMedia\HasMediaTrait```
+```Fomvasss\MediaLibraryExtension\Models\Traits\HasMediaTrait```
 
 and implements interface 
 
- ```Fomvasss\MediaLibraryExtension\Models\Traits\HasMedia\HasMedia```
+ ```Fomvasss\MediaLibraryExtension\Models\Traits\HasMedia```
 
 Usage in controller (or managers, etc.) next class
 

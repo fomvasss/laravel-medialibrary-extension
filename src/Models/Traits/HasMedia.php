@@ -6,7 +6,7 @@
  * Time: 1:32
  */
 
-namespace Fomvasss\MediaLibraryExtension\Models\Traits\HasMedia;
+namespace Fomvasss\MediaLibraryExtension\Models\Traits;
 
 interface HasMedia extends \Spatie\MediaLibrary\HasMedia\HasMedia
 {
