@@ -33,21 +33,21 @@ php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServicePr
 
 ## Integration
 
+Implements interface 
+
+ ```Fomvasss\MediaLibraryExtension\HasMedia\HasMedia```
+
 Usage in Eloquent models trait
 
-```Fomvasss\MediaLibraryExtension\Models\Traits\HasMedia\HasMediaTrait```
+```Fomvasss\MediaLibraryExtension\HasMedia\InteractsWithMedia```
 
-and implements interface 
-
- ```Fomvasss\MediaLibraryExtension\Models\Traits\HasMedia\HasMedia```
-
-Usage in controller (or managers, etc.) next class
+Usage in controller/manager, etc. next Class
 
 ```MediaLibraryManager``` 
 
-or facade
+or Facade
 
-```MediaLibraryManager```
+```MediaLibrary```
 
 ## Usage
 
@@ -60,12 +60,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\Models\Media;
-use Fomvasss\MediaLibraryExtension\Models\Traits\HasMedia\HasMediaTrait;
-use Fomvasss\MediaLibraryExtension\Models\Traits\HasMedia\HasMedia;
+use Fomvasss\MediaLibraryExtension\HasMedia\HasMedia;
+use Fomvasss\MediaLibraryExtension\HasMedia\InteractsWithMedia;
 
 class Article extends Model implements HasMedia
 {
-    use HasMediaTrait;
+    use InteractsWithMedia;
     
     // html-input name == media collection name, example:
     protected $mediaFieldsSingle = ['image']; 
@@ -93,24 +93,25 @@ class Article extends Model implements HasMedia
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use Fomvasss\MediaLibraryExtension\MediaLibraryManager;
 
 class HomeController extends Controller 
 {
-    public function store(Request $request, MediaLibraryManager $mediaMng)
+    public function store(Request $request, MediaLibraryManager $mediaManager)
     {
     	// create entity
         $article = \App\Model\Article::create($request->all());
 
-		$mediaMng->manage($article, $request);
-        // it's all, your files saved :)
+		$mediaManager->manage($article, $request);
+        // that`s all - your files saved :)
     }
     
     public function show($id)
     {
         $article = \App\Model\Article::findOrFail($id);
         
-        dd($article->getFirstMediaUrl('image'));
+        return $article->getFirstMediaUrl('image');
         // also available all methods medialibrary!
     }   
 }

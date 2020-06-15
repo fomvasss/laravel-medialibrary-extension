@@ -12,7 +12,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__.'/../config/medialibrary-extension.php' => config_path('medialibrary-extension.php')
+            __DIR__.'/../config/media-library-extension.php' => config_path('media-library-extension.php')
         ], 'config');
     }
 
@@ -23,12 +23,12 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/medialibrary-extension.php', 'medialibrary-extension');
+        $this->mergeConfigFrom(__DIR__.'/../config/media-library-extension.php', 'media-library-extension');
 
         $this->app->singleton(MediaLibraryManager::class, function () {
             return new MediaLibraryManager();
         });
 
-        $this->app->alias(MediaLibraryManager::class, 'medialibrary-manager');
+        $this->app->alias(MediaLibraryManager::class, 'media-library-manager');
     }
 }

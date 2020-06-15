@@ -1,13 +1,12 @@
 <?php
 
-namespace Fomvasss\MediaLibraryExtension\Models\Traits\HasMedia;
+namespace Fomvasss\MediaLibraryExtension\HasMedia;
 
-use Illuminate\Support\Str;
-use Spatie\MediaLibrary\Models\Media;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-trait HasMediaTrait
+trait InteractsWithMedia
 {
-    use \Spatie\MediaLibrary\HasMedia\HasMediaTrait;
+    use \Spatie\MediaLibrary\InteractsWithMedia;
 
     /**
      * Define this in your model.
@@ -39,10 +38,9 @@ trait HasMediaTrait
     ];*/
 
     /**
-     * Redefine this in your model,
-     * like spatie registerMediaConversions.
+     * Redefine this in your model, like spatie registerMediaConversions.
      *
-     * @param \Spatie\MediaLibrary\Models\Media|null $media
+     * @param Media $media
      */
     public function customMediaConversions(Media $media = null)
     {
@@ -66,7 +64,7 @@ trait HasMediaTrait
 
     /**
      * @param int $mediaQuality
-     * @return HasMediaTrait
+     * @return InteractsWithMedia
      */
     public function setMediaQuality(int $mediaQuality): self
     {
@@ -80,7 +78,7 @@ trait HasMediaTrait
      */
     public function getMediaQuality(): int
     {
-        return isset($this->mediaQuality) && is_int($this->mediaQuality) ? $this->mediaQuality : config('medialibrary-extension.default_img_quantity');
+        return isset($this->mediaQuality) && is_int($this->mediaQuality) ? $this->mediaQuality : config('media-library-extension.default_img_quantity');
     }
 
     /**
@@ -89,7 +87,7 @@ trait HasMediaTrait
      */
     public function defaultRegisterMediaConversions(Media $media = null)
     {
-        foreach (config('medialibrary-extension.default_conversions') as $conversionName => $params) {
+        foreach (config('media-library-extension.default_conversions') as $conversionName => $params) {
             if (is_array($params) && count($params)) {
                 $this->addMediaConversion($conversionName)
                     ->quality($params['quantity'] ?? $this->getMediaQuality())
@@ -118,10 +116,10 @@ trait HasMediaTrait
     }
 
     /**
-     * @param \Spatie\MediaLibrary\Models\Media|null $media
+     * @param Media $media
      * @throws \Spatie\Image\Exceptions\InvalidManipulation
      */
-    public function registerMediaConversions(Media $media = null)
+    public function registerMediaConversions(?Media $media = null): void
     {
         $this->defaultRegisterMediaConversions($media);
 
