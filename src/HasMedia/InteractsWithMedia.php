@@ -63,6 +63,21 @@ trait InteractsWithMedia
     }
 
     /**
+     * @param string $collectionName
+     * @param string $conversionName
+     * @param string $defaultUrl
+     * @return string
+     */
+    public function getMyFirstMediaFullUrl(string $collectionName = 'default', string $conversionName = '', string $defaultUrl = ''): string
+    {
+        if ($media = $this->getFirstMedia($collectionName)) {
+            return $media->getFullUrl($conversionName);
+        }
+
+        return $defaultUrl;
+    }
+
+    /**
      * @param int $mediaQuality
      * @return InteractsWithMedia
      */
