@@ -100,7 +100,7 @@ class HomeController extends Controller
     {
         $article = Article::create($request->validated());
     
-        $article->manage($request);
+        $article->mediaManage($request);
         // Or usage Facage:
         \MediaLibrary::manage($article, $request);
         
