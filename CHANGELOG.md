@@ -1,5 +1,12 @@
 # Changelog Laravel Metadialibrary extension
 
+## 4.0.0 - 2021-01-24
+
+- Support Laravel 8
+- Refactor
+- Add new methods & change API
+- Remove validation
+
 ## 3.0.0 - 2020-06-15
 
 - Support laravel-medialibrary v.8

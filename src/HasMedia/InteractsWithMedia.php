@@ -2,50 +2,58 @@
 
 namespace Fomvasss\MediaLibraryExtension\HasMedia;
 
+use Fomvasss\MediaLibraryExtension\MediaManager;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 trait InteractsWithMedia
 {
     use \Spatie\MediaLibrary\InteractsWithMedia;
-
-    /**
-     * Define this in your model.
-     * @var int
-     */
-    // protected $mediaQuality;
-
-    /**
-     * Define this in your model.
-     * @var array
-     */
-     // protected $mediaFieldsSingle = ['file', 'image',];
-
-    /**
-     * Define this in your model.
-     * @var array
-     */
-     // protected $mediaFieldsMultiple = ['files', 'images',];
-
-    /**
-     * Define this in your model if needed validation.
-     * @var array
-     */
-    /*
-     protected $mediaFieldsValidation = [
-        'file' => 'required|file',
-        'images' => 'required|array|max:4',
-        'images.*' => 'image|file|max:1024',
-    ];*/
+    
+     // Define this options in your model:
+     // protected $mediaMultipleCollections = ['files', 'images',];
+     // protected $mediaSingleCollections = ['file', 'image',];
+     // protected $mediaQuality;
 
     /**
      * Redefine this in your model, like spatie registerMediaConversions.
      *
      * @param Media $media
      */
-    public function customMediaConversions(Media $media = null)
+    public function customMediaConversions(Media $media = null): void
     {
         //...
     }
+    
+    /**
+     * @param Media|null $media
+     * @throws \Spatie\Image\Exceptions\InvalidManipulation
+     */
+    public function defaultRegisterMediaConversions(Media $media = null)
+    {
+        foreach (config('media-library-extension.default_conversions') as $conversionName => $params) {
+            if (is_array($params) && count($params)) {
+                $this->addMediaConversion($conversionName)
+                    ->quality($params['quantity'] ?? $this->getMediaQuality())
+                    ->crop($params['crop-method'] ?? 'crop-center', $params['width'] ?? 100, $params['height'] ?? 100)
+                    ->performOnCollections(...$this->getPerformOnImageCollections($params['regex_perform_to_collections'] ?? null));
+            }
+        }
+    }
+    
+    /**
+     * @param Media $media
+     * @throws \Spatie\Image\Exceptions\InvalidManipulation
+     */
+    public function registerMediaConversions(Media $media = null): void
+    {
+        $this->defaultRegisterMediaConversions($media);
+
+        $this->customMediaConversions($media);
+    }
+
 
     /**
      * @param string $collectionName
@@ -53,8 +61,11 @@ trait InteractsWithMedia
      * @param string $defaultUrl
      * @return string
      */
-    public function getMyFirstMediaUrl(string $collectionName = 'default', string $conversionName = '', string $defaultUrl = ''): string
-    {
+    public function getMyFirstMediaUrl(
+        string $collectionName = 'default',
+        string $conversionName = '',
+        string $defaultUrl = ''
+    ): string {
         if ($media = $this->getFirstMedia($collectionName)) {
             return $media->getUrl($conversionName);
         }
@@ -68,10 +79,99 @@ trait InteractsWithMedia
      * @param string $defaultUrl
      * @return string
      */
-    public function getMyFirstMediaFullUrl(string $collectionName = 'default', string $conversionName = '', string $defaultUrl = ''): string
-    {
+    public function getMyFirstMediaFullUrl(
+        string $collectionName = 'default',
+        string $conversionName = '',
+        string $defaultUrl = ''
+    ): string {
         if ($media = $this->getFirstMedia($collectionName)) {
             return $media->getFullUrl($conversionName);
+        }
+
+        return $defaultUrl;
+    }
+    
+    /**
+     * @return array
+     */
+    public function getMediaSingleCollections(): array
+    {
+        if (isset($this->mediaSingleCollections)) {
+            return Arr::wrap($this->mediaSingleCollections);
+        }
+
+        return [];
+    }
+//
+//    public function getMediaFieldsSingle(): array
+//    {
+//        return  $this->getMediaSingleCollections();
+//    }
+
+    /**
+     * @return array
+     */
+    public function getMediaMultipleCollections(): array
+    {
+        if (isset($this->mediaMultipleCollections)) {
+            return Arr::wrap($this->mediaMultipleCollections); 
+        }
+        
+        return [];
+    }
+
+    public function getMediaFieldsMultiple(): array
+    {
+        return  $this->getMediaMultipleCollections();
+    }
+
+    /**
+     * @param array $mediaSingleCollections
+     * @return $this
+     */
+    public function setMediaSingleCollections(array $collections)
+    {
+        $this->mediaSingleCollections = $collections;
+
+        return $this;
+    }
+
+    /**
+     * @param array $fields
+     * @return $this
+     */
+    public function setMediaMultipleCollections(array $collections)
+    {
+        $this->mediaMultipleCollections = $collections;
+
+        return $this;
+    }
+
+    /**
+     * @param string $collectionName
+     * @return mixed
+     */
+    public function getMainMedia(string $collectionName = 'default')
+    {
+        return $this->getMedia($collectionName)
+            ->where('is_main', true)
+            ->where('is_active', true)
+            ->first() ?: $this->getMedia($collectionName)->first();
+    }
+
+    /**
+     * @param string $collectionName
+     * @param string $conversionName
+     * @param string $defaultUrl
+     * @return string
+     */
+    public function getMainMediaUrl(
+        string $collectionName = 'default',
+        string $conversionName = '',
+        string $defaultUrl = ''
+    ): string {
+        if ($media = $this->getMainMedia($collectionName)) {
+            return $media->getUrl($conversionName);
         }
 
         return $defaultUrl;
@@ -93,36 +193,22 @@ trait InteractsWithMedia
      */
     public function getMediaQuality(): int
     {
-        return isset($this->mediaQuality) && is_int($this->mediaQuality) ? $this->mediaQuality : config('media-library-extension.default_img_quantity');
+        return isset($this->mediaQuality) && is_int($this->mediaQuality)
+            ? $this->mediaQuality
+            : config('media-library-extension.default_img_quantity');
     }
-
-    /**
-     * @param Media|null $media
-     * @throws \Spatie\Image\Exceptions\InvalidManipulation
-     */
-    public function defaultRegisterMediaConversions(Media $media = null)
-    {
-        foreach (config('media-library-extension.default_conversions') as $conversionName => $params) {
-            if (is_array($params) && count($params)) {
-                $this->addMediaConversion($conversionName)
-                    ->quality($params['quantity'] ?? $this->getMediaQuality())
-                    ->crop($params['crop-method'] ?? 'crop-center', $params['width'] ?? 50, $params['height'] ?? 50)
-                    ->performOnCollections(...$this->getPerformOnImageCollections($params['regex_perform_to_collections'] ?? null));
-            }
-        }
-    }
-
+    
     /**
      * @return array
      */
-    public function getPerformOnImageCollections(string $pattern = null): array
+    protected function getPerformOnImageCollections(string $pattern = null): array
     {
-        $mediaFields = array_values(array_merge($this->getMediaFieldsMultiple(), $this->getMediaFieldsSingle()));
-        $pattern = $pattern ?: '/img|image|photo|gallery|scr/i';
+        $mediaFields = array_values(array_merge($this->getMediaMultipleCollections(), $this->getMediaSingleCollections()));
+        $pattern = $pattern ?: '/img|image|photo|gallery|avatar/scr/i';
         $performOnCollections = [];
 
         foreach ($mediaFields as $field) {
-            if (preg_match($pattern ,$field)) {
+            if (preg_match($pattern, $field)) {
                 $performOnCollections[] = $field;
             }
         }
@@ -130,102 +216,42 @@ trait InteractsWithMedia
         return $performOnCollections;
     }
 
-    /**
-     * @param Media $media
-     * @throws \Spatie\Image\Exceptions\InvalidManipulation
-     */
-    public function registerMediaConversions(?Media $media = null): void
-    {
-        $this->defaultRegisterMediaConversions($media);
 
-        $this->customMediaConversions($media);
-    }
 
     /**
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
-    public function getMediaFieldsSingle(): array
+    public function mediaManage(\Illuminate\Http\Request $request)
     {
-        $res = isset($this->mediaFieldsSingle) ? (is_array($this->mediaFieldsSingle) ? $this->mediaFieldsSingle : [$this->mediaFieldsSingle]) : [];
+        $manager = app(MediaManager::class);
 
-        return $res;
+        return $manager->manage($this, $request);
     }
 
-    /**
-     * @return array
-     */
-    public function getMediaFieldsMultiple(): array
-    {
-        $res = isset($this->mediaFieldsMultiple) ? (is_array($this->mediaFieldsMultiple) ? $this->mediaFieldsMultiple : [$this->mediaFieldsMultiple]) : [];
 
-        return $res;
+    public function mediaSaveExpand(array $attrs, string $collectionName)
+    {
+        $manager = app(MediaManager::class);
+
+        return $manager->saveExpand($this, $attrs, $collectionName);
     }
-
-    /**
-     * @param array $mediaFieldsSingle
-     * @return $this
-     */
-    public function setMediaFieldsSingle(array $mediaFieldsSingle)
+    
+    public function mediaSaveSimple(UploadedFile $uploadedFile, string $collectionName)
     {
-        $this->mediaFieldsSingle = $mediaFieldsSingle;
+        $manager = app(MediaManager::class);
 
-        return $this;
+        return $manager->saveSimple($this, $uploadedFile, $collectionName);
     }
-
-    /**
-     * @param array $mediaFieldsMultiple
-     * @return $this
-     */
-    public function setMediaFieldsMultiple(array $mediaFieldsMultiple)
+    
+    public function mediaDelete($mediaIds)
     {
-        $this->mediaFieldsMultiple = $mediaFieldsMultiple;
+        $mediaIds = is_array($mediaIds) ? $mediaIds : [$mediaIds];        
+        $issetIds = $this->media->pluck('id')->toArray();
+        $ids = array_intersect($mediaIds, $issetIds);
 
-        return $this;
-    }
-
-    /**
-     * @param string|null $field
-     * @return array|mixed|string
-     */
-    public function getMediaFieldsValidation(string $field = null): array
-    {
-        $allRules = isset($this->mediaFieldsValidation) && is_array($this->mediaFieldsValidation) ? $this->mediaFieldsValidation : [];
-
-        $rules = [];
-
-        if ($field) {
-            $rules[$field] = $allRules[$field] ?? '';
-            if (isset($allRules[$field . '.*']) ) {
-                $rules[$field . '.*'] = $allRules[$field . '.*'];
-            }
-        } else {
-            return $allRules;
+        foreach ($ids as $id) {
+            $this->deleteMedia($id);
         }
-
-        return $rules;
-    }
-
-    /**
-     * @param array $rules
-     * @return $this
-     */
-    public function setMediaFieldsValidation(array $rules = [])
-    {
-        $this->mediaFieldsValidation = $rules;
-
-        return $this;
-    }
-
-    /**
-     * @param array $rules
-     * @return $this
-     */
-    public function addMediaFieldsValidation(array $rules = [])
-    {
-        $rules = array_merge($this->getMediaFieldsValidation(), $rules);
-
-        $this->setMediaFieldsValidation($rules);
-
-        return $this;
     }
 }

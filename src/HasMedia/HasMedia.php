@@ -2,48 +2,91 @@
 
 namespace Fomvasss\MediaLibraryExtension\HasMedia;
 
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\UploadedFile;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+
 interface HasMedia extends \Spatie\MediaLibrary\HasMedia
 {
     /**
-     * @return array
+     * @param Media|null $media
+     * @return mixed
      */
-    public function getPerformOnImageCollections(): array;
-
-    /**
-     * @return array
-     */
-    public function getMediaFieldsSingle(): array;
-
+    public function customMediaConversions(Media $media = null): void;
+    
     /**
      * @return array
      */
-    public function getMediaFieldsMultiple(): array;
+    public function getMediaSingleCollections(): array;
 
     /**
-     * @param array $mediaFieldsSingle
+     * @return array
      */
-    public function setMediaFieldsSingle(array $mediaFieldsSingle);
+    public function getMediaMultipleCollections(): array;
 
     /**
-     * @param array $mediaFieldsMultiple
+     * @param array $collections
      */
-    public function setMediaFieldsMultiple(array $mediaFieldsMultiple);
+    public function setMediaSingleCollections(array $collections);
 
     /**
-     * @param string|null $field
-     * @return mixed
+     * @param array $collections
      */
-    public function getMediaFieldsValidation(string $field = null): array;
+    public function setMediaMultipleCollections(array $collections);
 
     /**
-     * @param array $rules
-     * @return mixed
+     * @param string $collectionName
+     * @param string $conversionName
+     * @param string $defaultUrl
+     * @return string
      */
-    public function setMediaFieldsValidation(array $rules = []);
+    public function getMyFirstMediaUrl(
+        string $collectionName = 'default',
+        string $conversionName = '',
+        string $defaultUrl = ''
+    ): string;
+
+    public function getMyFirstMediaFullUrl(
+        string $collectionName = 'default',
+        string $conversionName = '',
+        string $defaultUrl = ''
+    ): string;
+
+    public function getMainMedia(string $collectionName = 'default');
+
+    public function getMainMediaUrl(
+        string $collectionName = 'default',
+        string $conversionName = '',
+        string $defaultUrl = ''
+    ): string;
+
+    public function mediaManage(\Illuminate\Http\Request $request);
 
     /**
-     * @param array $rules
-     * @return mixed
+     * @param array $attrs
+     *  id int sometimes
+     *  id file sometimes File for upload. If empty - update Media
+     *  is_active=true boolean sometimes
+     *  is_main=false boolean sometimes
+     *  weight int sometimes
+     *  title string sometimes
+     *  alt int sometimes
+     *  delete boolean sometimes If true - delete the file
+     * @param string $collectionName
+     * @return null|\Spatie\MediaLibrary\Models\Media
      */
-    public function addMediaFieldsValidation(array $rules = []);
+    public function mediaSaveExpand(array $attrs, string $collectionName);
+
+    /**
+     * @param Model $entity
+     * @param UploadedFile $uploadedFile
+     * @param string $collectionName
+     * @return \Spatie\MediaLibrary\Models\Media
+     */
+    public function mediaSaveSimple(UploadedFile $uploadedFile, string $collectionName);
+
+    /**
+     * @param integer|array $mediaIds
+     */
+    public function mediaDelete($mediaIds);
 }

@@ -12,46 +12,45 @@ Extensions to the file management functionality of package [spatie/laravel-media
 
 ## Installation
 
-Run from the command line:
-
 ```bash
 composer require fomvasss/laravel-medialibrary-extension
 ```
 
-## Publishing
+Publish `spatie/laravel-medialibrary` (if this has not been done before)
+```bash
+php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="migrations"
+php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="config"
+```
 
+Publish `fomvasss/laravel-medialibrary-extension`
 ```bash
 php artisan vendor:publish --provider="Fomvasss\MediaLibraryExtension\ServiceProvider"
 ```
 
-#### Publish `spatie/laravel-medialibrary` if needed
+Run migration:
 ```bash
-php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="migrations"
 php artisan migrate
-php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="config"
 ```
 
-## Integration
+Add facade to `config/app.php` to `aliases`:
 
-Implements interface 
+```php
+//...
+'MediaManager' => \Fomvasss\MediaLibraryExtension\Facade::class,
+//...
+```
 
+## Integration in Eloquent models
+
+Implements interface:
  ```Fomvasss\MediaLibraryExtension\HasMedia\HasMedia```
 
-Usage in Eloquent models trait
-
+Usage in Eloquent models trait:
 ```Fomvasss\MediaLibraryExtension\HasMedia\InteractsWithMedia```
-
-Usage in controller/manager, etc. next Class
-
-```MediaLibraryManager``` 
-
-or Facade
-
-```MediaLibrary```
 
 ## Usage
 
-`app/Models/Article.php`
+In model `app/Models/Article.php`:
 
 ```php
 <?php
@@ -68,13 +67,13 @@ class Article extends Model implements HasMedia
     use InteractsWithMedia;
     
     // html-input name == media collection name, example:
-    protected $mediaFieldsSingle = ['image']; 
-    protected $mediaFieldsMultiple = ['images', 'files'];
+    protected $mediaSingleCollections = ['image']; 
+    protected $mediaMultipleCollections = ['images', 'files'];
 
     /**
      * Optional method.
      */
-    public function customMediaConversions(Media $media = null)
+    public function customMediaConversions(Media $media = null): void
     {
         $this->addMediaCollection('main')
             ->singleFile();
@@ -86,7 +85,7 @@ class Article extends Model implements HasMedia
 }
 ```
 
-`app/Http/Controllers/Article.php`
+In controller `app/Http/Controllers/Article.php`:
 
 ```php
 <?php 
@@ -94,17 +93,18 @@ class Article extends Model implements HasMedia
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Fomvasss\MediaLibraryExtension\MediaLibraryManager;
 
 class HomeController extends Controller 
 {
-    public function store(Request $request, MediaLibraryManager $mediaManager)
+    public function store(PostRequest $request)
     {
-    	// create entity
-        $article = \App\Model\Article::create($request->all());
-
-		$mediaManager->manage($article, $request);
-        // that`s all - your files saved :)
+        $article = Article::create($request->validated());
+    
+        $article->manage($request);
+        // Or usage Facage:
+        \MediaLibrary::manage($article, $request);
+        
+        //...
     }
     
     public function show($id)
@@ -117,7 +117,7 @@ class HomeController extends Controller
 }
 ```
 
-## Examples html-form
+## Examples HTML form
 
 For upload files from collection name `images` you need send form with next data:
 ```html
@@ -138,4 +138,4 @@ For deleted file from collection name `images` and `id = 13, 15` you need send f
 
 ## Links
 
-Cool package [spatie/laravel-medialibrary](https://github.com/spatie/laravel-medialibrary)
+[spatie/laravel-medialibrary](https://github.com/spatie/laravel-medialibrary)
