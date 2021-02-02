@@ -1,12 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: fomvasss
- * Date: 07.01.19
- * Time: 1:32
- */
 
-namespace Fomvasss\MediaLibraryExtension\Models\Traits\HasMedia;
+namespace Fomvasss\MediaLibraryExtension\Models\Traits;
 
 interface HasMedia extends \Spatie\MediaLibrary\HasMedia\HasMedia
 {
