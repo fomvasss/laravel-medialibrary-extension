@@ -5,6 +5,7 @@ namespace Fomvasss\MediaLibraryExtension;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class MediaManager
@@ -46,6 +47,25 @@ class MediaManager
         $filename = $filenameGenerator::get($originalName);
 
         return $entity->addMedia($uploadedFile)
+            ->usingFileName($filename)
+            ->toMediaCollection($collectionName);
+    }
+
+    /**
+     * @param Model $entity
+     * @param string $base64
+     * @param string $collectionName
+     * @return Media
+     */
+    public function saveSimpleBase64(Model $entity, string $base64, string $collectionName): Media
+    {
+        if ($filenameGenerator = config('media-library-extension.filename_generator_base64')) {
+            $filename = $filenameGenerator::get($originalName);
+        } else {
+            $filename = Str::random() . '.jpg';
+        }
+
+        return $entity->addMediaFromBase64($base64)
             ->usingFileName($filename)
             ->toMediaCollection($collectionName);
     }
@@ -175,12 +195,19 @@ class MediaManager
      */
     protected function processSingle(Model $model, Request $request, $collectionName)
     {
-        if ($request->{$collectionName} && $request->{$collectionName} instanceof UploadedFile) {
-            $model->getMedia($collectionName)->each(function ($e) {
-                $e->delete();
-            });
+        if ($request->{$collectionName}) {
 
-            $this->saveSimple($model, $request->file($collectionName), $collectionName);
+            if ($request->{$collectionName} instanceof UploadedFile) {
+                $model->getMedia($collectionName)->each(function ($e) {
+                    $e->delete();
+                });
+                $this->saveSimple($model, $request->file($collectionName), $collectionName);
+            } elseif (strpos($request->{$collectionName}, ';base64') !== false) {
+                $model->getMedia($collectionName)->each(function ($e) {
+                    $e->delete();
+                });
+                $this->saveSimpleBase64($model, $request->{$collectionName}, $collectionName);
+            }
             
         } elseif(is_array($request->{$collectionName})) {
             if (isset($request->{$collectionName}['file']) && $request->{$collectionName}['file'] instanceof UploadedFile) {
