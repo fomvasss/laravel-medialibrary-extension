@@ -56,7 +56,7 @@ class MediaManager
 
         if ($this->userId) {
             $media->setAttribute('user_id', $this->userId);
-            $media->save;
+            $media->save();
         }
         return $media;
     }
@@ -81,7 +81,7 @@ class MediaManager
 
         if ($this->userId) {
             $media->setAttribute('user_id', $this->userId);
-            $media->save;
+            $media->save();
         }
 
         return $media;
