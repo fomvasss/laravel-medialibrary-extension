@@ -55,7 +55,7 @@ class MediaManager
             ->toMediaCollection($collectionName);
 
         if ($this->userId) {
-            $media->setAttrbute('user_id', $this->userId);
+            $media->setAttribute('user_id', $this->userId);
             $media->save;
         }
         return $media;
@@ -80,7 +80,7 @@ class MediaManager
             ->toMediaCollection($collectionName);
 
         if ($this->userId) {
-            $media->setAttrbute('user_id', $this->userId);
+            $media->setAttribute('user_id', $this->userId);
             $media->save;
         }
 
