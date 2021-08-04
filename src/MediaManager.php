@@ -19,7 +19,7 @@ class MediaManager
      */
     public function manage(Model $model, Request $request)
     {
-        if ($user = $request->user() && config('media-library-extension.use_auth_user')) {
+        if (($user = $request->user()) && config('media-library-extension.use_auth_user')) {
             $this->userId = $user->id;
         }
 
