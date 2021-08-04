@@ -10,6 +10,8 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class MediaManager
 {
+    protected $userId = null;
+
     /**
      * @param Model $model
      * @param Request $request
@@ -17,9 +19,11 @@ class MediaManager
      */
     public function manage(Model $model, Request $request)
     {
-        $res = [];
-        
-        // Multiple 
+        if ($user = $request->user() && config('media-library-extension.use_auth_user')) {
+            $this->userId = $user->id;
+        }
+
+        // Multiple
         foreach ($model->getMediaMultipleCollections() as $collectionName) {
             $this->processMultiple($model, $request, $collectionName);
         }
@@ -46,9 +50,15 @@ class MediaManager
         $filenameGenerator = config('media-library-extension.filename_generator');
         $filename = $filenameGenerator::get($originalName);
 
-        return $entity->addMedia($uploadedFile)
+        $media = $entity->addMedia($uploadedFile)
             ->usingFileName($filename)
             ->toMediaCollection($collectionName);
+
+        if ($this->userId) {
+            $media->setAttrbute('user_id', $this->userId);
+            $media->save;
+        }
+        return $media;
     }
 
     /**
@@ -60,14 +70,21 @@ class MediaManager
     public function saveSimpleBase64(Model $entity, string $base64, string $collectionName): Media
     {
         if ($filenameGenerator = config('media-library-extension.filename_generator_base64')) {
-            $filename = $filenameGenerator::get($originalName);
+            $filename = $filenameGenerator::get();
         } else {
             $filename = Str::random() . '.jpg';
         }
 
-        return $entity->addMediaFromBase64($base64)
+        $media = $entity->addMediaFromBase64($base64)
             ->usingFileName($filename)
             ->toMediaCollection($collectionName);
+
+        if ($this->userId) {
+            $media->setAttrbute('user_id', $this->userId);
+            $media->save;
+        }
+
+        return $media;
     }
 
     /**
@@ -123,6 +140,9 @@ class MediaManager
             $isMain = isset($attrs['is_main'])
                 ? $this->comparisonBooleanValue($attrs['is_main'])
                 : false;
+            $userId = isset($attrs['user_id'])
+                ? intval($attrs['user_id'])
+                : $this->userId;
             
             if ($isMain) {
                 // Unset is_main other media collecion for this model
@@ -144,6 +164,10 @@ class MediaManager
             // Set media weight
             if (isset($attrs['weight'])) {
                 $media->setAttribute('order_column', (int)$attrs['weight']);
+            }
+            // User (owner) media
+            if ($userId) {
+                $media->setAttribute('user_id', $userId);
             }
 
             $media->save();
@@ -195,7 +219,17 @@ class MediaManager
      */
     protected function processSingle(Model $model, Request $request, $collectionName)
     {
-        if ($request->{$collectionName}) {
+        if (is_array($request->{$collectionName})) {
+            if (isset($request->{$collectionName}['file']) && $request->{$collectionName}['file'] instanceof UploadedFile) {
+                $model->getMedia($collectionName)->each(function ($e) {
+                    $e->delete();
+                });
+            }
+
+            if ($request->{$collectionName}) {
+                $this->saveExpand($model, $request->{$collectionName}, $collectionName);
+            }
+        } elseif ($request->{$collectionName}) {
 
             if ($request->{$collectionName} instanceof UploadedFile) {
                 $model->getMedia($collectionName)->each(function ($e) {
@@ -207,17 +241,6 @@ class MediaManager
                     $e->delete();
                 });
                 $this->saveSimpleBase64($model, $request->{$collectionName}, $collectionName);
-            }
-            
-        } elseif(is_array($request->{$collectionName})) {
-            if (isset($request->{$collectionName}['file']) && $request->{$collectionName}['file'] instanceof UploadedFile) {
-                $model->getMedia($collectionName)->each(function ($e) {
-                    $e->delete();
-                });
-            }
-
-            if ($request->{$collectionName}) {
-                $this->saveExpand($model, $request->{$collectionName}, $collectionName);
             }
         }
 

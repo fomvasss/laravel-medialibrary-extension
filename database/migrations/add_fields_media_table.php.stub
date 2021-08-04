@@ -16,6 +16,7 @@ class AddFieldsMediaTable extends Migration
         Schema::table('media', function (Blueprint $table) {
             $table->boolean('is_main')->default(false)->after('size');
             $table->boolean('is_active')->default(true)->after('is_main');
+            $table->unsignedBigInteger('user_id')->nullable()->after('is_active');
         });
     }
 

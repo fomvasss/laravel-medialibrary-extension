@@ -31,6 +31,8 @@ return [
     
     'deleted_request_input' => 'media_deleted', // request('media_deleted')
 
+    'use_auth_user' => false, // save user_id to media
+
     /*
      *  id int|null
      *  file|null File for upload. If empty - update Media fields
