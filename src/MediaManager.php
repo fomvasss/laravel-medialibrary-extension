@@ -5,6 +5,8 @@ namespace Fomvasss\MediaLibraryExtension;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -28,13 +30,75 @@ class MediaManager
             $this->processMultiple($model, $request, $collectionName);
         }
 
-        // Single 
+        // Single
         foreach ($model->getMediaSingleCollections() as $collectionName) {
             $this->processSingle($model, $request, $collectionName);
         }
 
         // Process deleted
         $this->processDeleted($model, $request);
+    }
+
+    public function manageExpandSync(Model $model, array $data, $user = null)
+    {
+        if ($user && config('media-library-extension.use_auth_user')) {
+            $this->userId = $user->id;
+        }
+
+        // Multiple
+        foreach ($model->getMediaMultipleCollections() as $collectionName) {
+            if (isset($data[$collectionName])) {
+                foreach ($data[$collectionName] as $item) {
+                    if (is_array($item)) {
+                        $this->saveExpandSync($model, $item, $collectionName);
+                    }
+                }
+            }
+        }
+
+        // Single
+        foreach ($model->getMediaSingleCollections() as $collectionName) {
+            if (isset($data[$collectionName])) {
+                $this->saveExpandSync($model, $data[$collectionName], $collectionName);
+            }
+        }
+
+        // Process deleted
+        if ($arr = Arr::get($data, config('media-library-extension.deleted_request_input'))) {
+            $needDeleted = is_array($arr) ? $arr : [$arr];
+            foreach ($needDeleted as $uuid) {
+                optional(Media::findByUuid($uuid))->delete();
+            }
+        }
+    }
+
+    public function saveExpandSync(Model $model, array $attrs, string $collectionName)
+    {
+        $media = null;
+
+        // Delete media
+        if (isset($attrs['delete']) && $this->comparisonBooleanValue($attrs['delete'])) {
+            if (!empty($attrs['uuid']) && ($media = Media::findByUuid($attrs['uuid']))) {
+                $media->delete();
+            }
+
+            return $media;
+
+            // Upd params, Model & Regenerate conversions
+        } elseif (isset($attrs['uuid'])) {
+            $media = Media::findByUuid($attrs['uuid']);
+
+            $this->setExpandParams($media, $attrs, $collectionName);
+            if ($media->model_type !== $model->getMorphClass()) {
+                $media->setAttribute('model_id', $model->id);
+                $media->setAttribute('model_type', $model->getMorphClass());
+                $media->save();
+
+                Artisan::call('media-library:regenerate', ['--ids' => $media->id]);
+            }
+        }
+
+        return $media;
     }
 
     /**
@@ -115,7 +179,7 @@ class MediaManager
 
             return $media;
 
-        // Upload new media
+            // Upload new media
         } elseif (empty($attrs['id']) && isset($attrs['file']) && $attrs['file'] instanceof UploadedFile) {
 
             $uploadedFile = $attrs['file'];
@@ -128,52 +192,57 @@ class MediaManager
                 ->usingFileName($filename)
                 ->toMediaCollection($collectionName);
 
-        // Update fields for existing media
+            // Update fields for existing media
         } elseif (!empty($attrs['id'])) {
             $media = $model->media()->find($attrs['id']);
         }
 
         if ($media) {
-            $isActive = isset($attrs['is_active'])
-                ? $this->comparisonBooleanValue($attrs['is_active'])
-                : true;
-            $isMain = isset($attrs['is_main'])
-                ? $this->comparisonBooleanValue($attrs['is_main'])
-                : false;
-            $userId = isset($attrs['user_id'])
-                ? intval($attrs['user_id'])
-                : $this->userId;
-            
-            if ($isMain) {
-                // Unset is_main other media collecion for this model
-                $model->media()
-                    ->where('collection_name', $collectionName)
-                    ->update(['is_main' => false]);
-            }
-
-            $media->setAttribute('is_active', $isActive);
-            $media->setAttribute('is_main', $isMain);
-
-            // Set custom properties
-            foreach (config('media-library-extension.expand.allowed_custom_properties', []) as $property) {
-                if (isset($attrs[$property])) {
-                    $media->setCustomProperty($property, $attrs[$property]);
-                }
-            }
-
-            // Set media weight
-            if (isset($attrs['weight'])) {
-                $media->setAttribute('order_column', (int)$attrs['weight']);
-            }
-            // User (owner) media
-            if ($userId) {
-                $media->setAttribute('user_id', $userId);
-            }
-
-            $media->save();
+            $this->setExpandParams($media, $attrs, $collectionName);
         }
 
         return $media;
+    }
+
+    protected function setExpandParams($media, array $attrs, $collectionName)
+    {
+        $isActive = isset($attrs['is_active'])
+            ? $this->comparisonBooleanValue($attrs['is_active'])
+            : true;
+        $isMain = isset($attrs['is_main'])
+            ? $this->comparisonBooleanValue($attrs['is_main'])
+            : false;
+        $userId = isset($attrs['user_id'])
+            ? intval($attrs['user_id'])
+            : $this->userId;
+
+        if ($isMain && ($model = $media->model)) {
+            // Unset is_main other media collecion for this model
+            $model->media()
+                ->where('collection_name', $collectionName)
+                ->update(['is_main' => false]);
+        }
+
+        $media->setAttribute('is_active', $isActive);
+        $media->setAttribute('is_main', $isMain);
+
+        // Set custom properties
+        foreach (config('media-library-extension.expand.allowed_custom_properties', []) as $property) {
+            if (isset($attrs[$property])) {
+                $media->setCustomProperty($property, $attrs[$property]);
+            }
+        }
+
+        // Set media weight
+        if (isset($attrs['weight'])) {
+            $media->setAttribute('order_column', (int)$attrs['weight']);
+        }
+        // User (owner) media
+        if ($userId) {
+            $media->setAttribute('user_id', $userId);
+        }
+
+        $media->save();
     }
 
     /**
@@ -257,7 +326,7 @@ class MediaManager
     public function processDeleted(Model $model, Request $request)
     {
         $deletedRequestInput = config('media-library-extension.deleted_request_input');
-        
+
         if ($request->{$deletedRequestInput}) {
 
             $deletedIds = is_array($request->{$deletedRequestInput})
