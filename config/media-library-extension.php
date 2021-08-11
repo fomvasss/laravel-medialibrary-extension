@@ -33,6 +33,8 @@ return [
 
     'use_auth_user' => false, // save user_id to media
 
+    'use_db_media_key' => 'id', // id or uuid !Deprecated
+
     /*
      *  id int|null
      *  file|null File for upload. If empty - update Media fields

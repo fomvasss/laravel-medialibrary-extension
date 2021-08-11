@@ -11,11 +11,11 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 trait InteractsWithMedia
 {
     use \Spatie\MediaLibrary\InteractsWithMedia;
-    
-     // Define this options in your model:
-     // protected $mediaMultipleCollections = ['files', 'images',];
-     // protected $mediaSingleCollections = ['file', 'image',];
-     // protected $mediaQuality;
+
+    // Define this options in your model:
+    // protected $mediaMultipleCollections = ['files', 'images',];
+    // protected $mediaSingleCollections = ['file', 'image',];
+    // protected $mediaQuality;
 
     /**
      * Redefine this in your model, like spatie registerMediaConversions.
@@ -26,7 +26,7 @@ trait InteractsWithMedia
     {
         //...
     }
-    
+
     /**
      * @param Media|null $media
      * @throws \Spatie\Image\Exceptions\InvalidManipulation
@@ -42,7 +42,7 @@ trait InteractsWithMedia
             }
         }
     }
-    
+
     /**
      * @param Media $media
      * @throws \Spatie\Image\Exceptions\InvalidManipulation
@@ -90,7 +90,7 @@ trait InteractsWithMedia
 
         return $defaultUrl;
     }
-    
+
     /**
      * @return array
      */
@@ -102,11 +102,6 @@ trait InteractsWithMedia
 
         return [];
     }
-//
-//    public function getMediaFieldsSingle(): array
-//    {
-//        return  $this->getMediaSingleCollections();
-//    }
 
     /**
      * @return array
@@ -114,9 +109,9 @@ trait InteractsWithMedia
     public function getMediaMultipleCollections(): array
     {
         if (isset($this->mediaMultipleCollections)) {
-            return Arr::wrap($this->mediaMultipleCollections); 
+            return Arr::wrap($this->mediaMultipleCollections);
         }
-        
+
         return [];
     }
 
@@ -197,7 +192,7 @@ trait InteractsWithMedia
             ? $this->mediaQuality
             : config('media-library-extension.default_img_quantity');
     }
-    
+
     /**
      * @return array
      */
@@ -216,8 +211,6 @@ trait InteractsWithMedia
         return $performOnCollections;
     }
 
-
-
     /**
      * @param \Illuminate\Http\Request $request
      * @return array
@@ -229,29 +222,67 @@ trait InteractsWithMedia
         return $manager->manage($this, $request);
     }
 
+    /**
+     * @param array $data
+     * @param null $user
+     * @return mixed
+     */
+    public function mediaManageRefresh(array $data, $user = null)
+    {
+        $manager = app(MediaManager::class);
 
+        return $manager->manageRefresh($this, $data, $user);
+    }
+
+    /**
+     * @param array $attrs
+     * @param string $collectionName
+     * @return mixed
+     */
     public function mediaSaveExpand(array $attrs, string $collectionName)
     {
         $manager = app(MediaManager::class);
 
         return $manager->saveExpand($this, $attrs, $collectionName);
     }
-    
+
+    /**
+     * @param UploadedFile $uploadedFile
+     * @param string $collectionName
+     * @return mixed
+     */
     public function mediaSaveSimple(UploadedFile $uploadedFile, string $collectionName)
     {
         $manager = app(MediaManager::class);
 
         return $manager->saveSimple($this, $uploadedFile, $collectionName);
     }
-    
+
+    /**
+     * TODO: Deprecated use deleteMedias
+     * @param $mediaIds
+     */
     public function mediaDelete($mediaIds)
     {
-        $mediaIds = is_array($mediaIds) ? $mediaIds : [$mediaIds];        
-        $issetIds = $this->media->pluck('id')->toArray();
+        $this->deleteMedias($mediaIds);
+    }
+
+    /**
+     * @param $mediaIds
+     */
+    public function deleteMedias($mediaIds)
+    {
+        // TODO: Deprecated - use uuid
+        $key = config('media-library-extension.use_db_media_key', 'id');
+
+        $mediaIds = is_array($mediaIds) ? $mediaIds : [$mediaIds];
+        $issetIds = $this->media->pluck($key)->toArray();
         $ids = array_intersect($mediaIds, $issetIds);
 
-        foreach ($ids as $id) {
-            $this->deleteMedia($id);
+        foreach ($ids as $mediaId) {
+            if ($media = $this->media->where($key, $mediaId)->first()) {
+                $media->delete();
+            }
         }
     }
 }

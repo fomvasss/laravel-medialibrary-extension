@@ -1,5 +1,10 @@
 # Changelog Laravel Metadialibrary extension
 
+## 4.3.0 - 2021-08-11
+
+- Add sync - Media with new Model
+- Refactor
+
 ## 4.0.0 - 2021-01-24
 
 - Support Laravel 8
