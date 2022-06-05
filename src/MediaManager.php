@@ -121,7 +121,7 @@ class MediaManager
                     });
                 }
 
-                $media->setAttribute('model_id', $model->id);
+                $media->setAttribute('model_id', $model->getKey());
                 $media->setAttribute('model_type', $model->getMorphClass());
                 $media->setAttribute('collection_name', $collectionName);
                 $media->save();

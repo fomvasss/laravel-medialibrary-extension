@@ -13,8 +13,8 @@ trait InteractsWithMedia
     use \Spatie\MediaLibrary\InteractsWithMedia;
 
     // Define this options in your model:
-    // protected $mediaMultipleCollections = ['files', 'images',];
-    // protected $mediaSingleCollections = ['file', 'image',];
+    // protected array $mediaMultipleCollections = ['files', 'images',];
+    // protected array $mediaSingleCollections = ['file', 'image',];
     // protected $mediaQuality;
 
     /**
