@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Fomvasss\MediaLibraryExtension\FilenameGenerators;
 
 class DefaultFileNameGenerator implements FileNameGeneratorInterface

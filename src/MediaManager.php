@@ -191,6 +191,7 @@ class MediaManager
      * @param array $attrs
      *  id int sometimes (deprecated)
      *  uuid string UUID Media
+     *  url string URL to download media
      *  file file sometimes File for upload. If empty - update Media
      *  is_active=true boolean sometimes
      *  is_main=false boolean sometimes
@@ -214,6 +215,15 @@ class MediaManager
             }
 
             return $media;
+            
+        // upload file by url
+        } elseif (empty($attrs[$key]) && isset($attrs['url'])) {
+            $filenameGenerator = config('media-library-extension.filename_generator');
+            $filename = $filenameGenerator::get($attrs['url']);
+
+            $media = $model->addMediaFromUrl($attrs['url'])
+                ->usingFileName($filename)
+                ->toMediaCollection($collectionName);
 
             // Upload new media
         } elseif (empty($attrs[$key]) && isset($attrs['file']) && $attrs['file'] instanceof UploadedFile) {
