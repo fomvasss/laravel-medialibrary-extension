@@ -28,7 +28,7 @@ class AddFieldsMediaTable extends Migration
     public function down()
     {
         Schema::table('media', function (Blueprint $table) {
-            $table->dropColumn(['is_main', 'is_active']);
+            $table->dropColumn(['is_main', 'is_active', 'user_id']);
         });
     }
 }

@@ -41,6 +41,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
             $this->publishes([
                 __DIR__.'/../database/migrations/add_fields_media_table.php.stub' => database_path('/migrations/'.$timestamp.'_add_fields_media_table.php'),
+                __DIR__.'/../database/migrations/create_media_temporaries_table.php.stub' => database_path('/migrations/'.$timestamp.'_create_media_temporaries_table.php'),
             ], 'migrations');
         }
     }

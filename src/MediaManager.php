@@ -75,8 +75,8 @@ class MediaManager
         // Process deleted
         if ($arr = Arr::get($data, config('media-library-extension.deleted_request_input'))) {
             $needDeleted = is_array($arr) ? $arr : [$arr];
-            foreach ($needDeleted as $uuid) {
-                optional(Media::findByUuid($uuid))->delete();
+            foreach ($needDeleted as $id) {
+                Media::find($id)?->delete();
             }
         }
     }
@@ -85,7 +85,7 @@ class MediaManager
      *
      * @param Model $model
      * @param array $attrs
-     *  uuid string UUID Media
+     *  id string ID Media
      *  is_active=true boolean sometimes
      *  is_main=false boolean sometimes
      *  weight int sometimes
@@ -101,16 +101,15 @@ class MediaManager
 
         // Delete media
         if (isset($attrs['delete']) && $this->comparisonBooleanValue($attrs['delete'])) {
-            if (!empty($attrs['uuid']) && ($media = Media::findByUuid($attrs['uuid']))) {
+            if (!empty($attrs['id']) && ($media = Media::find($attrs['id']))) {
                 $media->delete();
             }
 
             return $media;
 
-            // Upd params, Model & Regenerate conversions
-        } elseif (isset($attrs['uuid']) && ($media = Media::findByUuid($attrs['uuid']))) {
-
-
+        // Upd params, Model & Regenerate conversions
+        } elseif (isset($attrs['id']) && ($media = Media::find($attrs['id']))) {
+            
             // Sync new Media with Model
             if ($media->model_type !== $model->getMorphClass()) {
 
@@ -189,10 +188,10 @@ class MediaManager
      *
      * @param Model $model
      * @param array $attrs
-     *  id int sometimes (deprecated)
-     *  uuid string UUID Media
+     *  id int sometimes
      *  url string URL to download media
      *  file file sometimes File for upload. If empty - update Media
+     *  base64 base64 string for upload
      *  is_active=true boolean sometimes
      *  is_main=false boolean sometimes
      *  weight int sometimes
@@ -206,18 +205,16 @@ class MediaManager
     {
         $media = null;
 
-        $key = config('media-library-extension.use_db_media_key', 'id'); // TODO Deprecated - use uuid
-
-        // Delete media
+        // Delete Media
         if (isset($attrs['delete']) && $this->comparisonBooleanValue($attrs['delete'])) {
-            if (!empty($attrs[$key]) && ($media = $model->media()->where($key, $attrs[$key])->first())) {
+            if (!empty($attrs['id']) && ($media = $model->media->firstWhere('id', $attrs['id']))) {
                 $media->delete();
             }
 
             return $media;
-            
-        // upload file by url
-        } elseif (empty($attrs[$key]) && isset($attrs['url'])) {
+
+        // Upload file by URL
+        } elseif (empty($attrs['id']) && isset($attrs['url'])) {
             $filenameGenerator = config('media-library-extension.filename_generator');
             $filename = $filenameGenerator::get($attrs['url']);
 
@@ -225,8 +222,16 @@ class MediaManager
                 ->usingFileName($filename)
                 ->toMediaCollection($collectionName);
 
-            // Upload new media
-        } elseif (empty($attrs[$key]) && isset($attrs['file']) && $attrs['file'] instanceof UploadedFile) {
+        // Upload from base64
+        } elseif (empty($attrs['id'])
+            && isset($attrs['base64'])
+            && is_string($attrs['base64'])
+            && strpos($attrs['base64'], ';base64') !== false) {
+
+            $media = $this->saveSimpleBase64($model, $attrs['base64'], $collectionName);
+
+        // Upload new Media
+        } elseif (empty($attrs['id']) && isset($attrs['file']) && $attrs['file'] instanceof UploadedFile) {
 
             $uploadedFile = $attrs['file'];
             $originalName = $uploadedFile->getClientOriginalName();
@@ -238,11 +243,12 @@ class MediaManager
                 ->usingFileName($filename)
                 ->toMediaCollection($collectionName);
 
-            // Update fields for existing media
-        } elseif (!empty($attrs[$key])) {
-            $media = $model->media()->where($key, $attrs[$key])->first();
+        // Update columns for existing Media
+        } elseif (!empty($attrs['id'])) {
+            $media = $model->media->firstWhere('id', $attrs['id']);
         }
 
+        // Save additions params
         if ($media) {
             $this->setExpandParams($media, $attrs, $collectionName);
         }
@@ -313,21 +319,19 @@ class MediaManager
             }
         }
 
-        $key = config('media-library-extension.use_db_media_key', 'id');
-
         $weightSuffix = config('media-library-extension.field_suffixes.weight', '_weight');
         if (($weight = $request->get($collectionName . $weightSuffix)) && is_array($weight)) {
             foreach ($weight as $mediaId => $value) {
                 $model->media()
                     ->where('collection_name', $collectionName)
-                    ->where($key, $mediaId)->update(['order_column' => $value]);
+                    ->where('id', $mediaId)->update(['order_column' => $value]);
             }
         }
 
         $deletedSuffix = config('media-library-extension.field_suffixes.deleted', '_deleted');
         if (($ids = $request->get($collectionName . $deletedSuffix)) && is_array($ids)) {
             foreach ($ids as $mediaId) {
-                if ($mediaId && ($media = $model->media->where($key, $mediaId)->first())) {
+                if ($mediaId && ($media = $model->media->firstWhere('id', $mediaId))) {
                     $media->delete();
                 }
             }
@@ -368,9 +372,7 @@ class MediaManager
 
         $deletedSuffix = config('media-library-extension.field_suffixes.deleted', '_deleted');
         if ($mediaId = $request->get($collectionName . $deletedSuffix)) {
-            $key = config('media-library-extension.use_db_media_key', 'id');
-
-            if ($media = $model->media->where($key, $mediaId)->first()) {
+            if ($media = $model->media->firstWhere('id', $mediaId)) {
                 $media->delete();
             }
         }
@@ -390,13 +392,11 @@ class MediaManager
                 ? $request->{$deletedRequestInput}
                 : [$request->{$deletedRequestInput}];
 
-            $key = config('media-library-extension.use_db_media_key', 'id');
-
-            $issetIds = $model->media->pluck($key)->toArray();
+            $issetIds = $model->media->pluck('id')->toArray();
             $deletedIds = array_intersect($deletedIds, $issetIds);
 
             foreach ($deletedIds as $mediaId) {
-                if ($media = $model->media->where($key, $mediaId)->first()) {
+                if ($media = $model->media->firstWhere('id', $mediaId)) {
                     $media->delete();
                 }
             }

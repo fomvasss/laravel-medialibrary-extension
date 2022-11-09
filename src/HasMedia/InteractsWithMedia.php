@@ -257,30 +257,18 @@ trait InteractsWithMedia
 
         return $manager->saveSimple($this, $uploadedFile, $collectionName);
     }
-
-    /**
-     * TODO: Deprecated use deleteMedias
-     * @param $mediaIds
-     */
-    public function mediaDelete($mediaIds)
-    {
-        $this->deleteMedias($mediaIds);
-    }
-
+    
     /**
      * @param $mediaIds
      */
     public function deleteMedias($mediaIds)
     {
-        // TODO: Deprecated - use uuid
-        $key = config('media-library-extension.use_db_media_key', 'id');
-
         $mediaIds = is_array($mediaIds) ? $mediaIds : [$mediaIds];
-        $issetIds = $this->media->pluck($key)->toArray();
+        $issetIds = $this->media->pluck('id')->toArray();
         $ids = array_intersect($mediaIds, $issetIds);
 
         foreach ($ids as $mediaId) {
-            if ($media = $this->media->where($key, $mediaId)->first()) {
+            if ($media = $this->media->where('id', $mediaId)->first()) {
                 $media->delete();
             }
         }

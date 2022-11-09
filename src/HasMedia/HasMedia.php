@@ -84,9 +84,4 @@ interface HasMedia extends \Spatie\MediaLibrary\HasMedia
      * @return \Spatie\MediaLibrary\Models\Media
      */
     public function mediaSaveSimple(UploadedFile $uploadedFile, string $collectionName);
-
-    /**
-     * @param integer|array $mediaIds
-     */
-    public function mediaDelete($mediaIds);
 }

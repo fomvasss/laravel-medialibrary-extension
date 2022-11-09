@@ -31,10 +31,6 @@ return [
     
     'deleted_request_input' => 'media_deleted', // request('media_deleted')
 
-    'use_auth_user' => false, // save user_id to media
-
-    'use_db_media_key' => 'id', // id or uuid !Deprecated
-
     /*
      *  id int|null
      *  file|null File for upload. If empty - update Media fields
@@ -50,4 +46,6 @@ return [
             'alt', 'title',  
         ],
     ],
+    
+    'temporary_upload_model' => \Fomvasss\MediaLibraryExtension\Models\MediaTemporary::class,
 ];
