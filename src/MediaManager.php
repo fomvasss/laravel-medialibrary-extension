@@ -108,8 +108,7 @@ class MediaManager
             return $media;
 
         // Upd params, Model & Regenerate conversions
-        } elseif (isset($attrs['id']) && ($media = Media::find($attrs['id']))) {
-            
+        } elseif (isset($attrs['id']) && ($media = $this->mediaClass()::find($attrs['id']))) {
             // Sync new Media with Model
             if ($media->model_type !== $model->getMorphClass()) {
 
@@ -127,7 +126,7 @@ class MediaManager
 
                 Artisan::call('media-library:regenerate', ['--ids' => $media->id]);
             }
-            $this->setExpandParams($media, $attrs, $collectionName);
+            //$this->setExpandParams($media, $attrs, $collectionName);
         }
 
         return $media;
@@ -188,16 +187,17 @@ class MediaManager
      *
      * @param Model $model
      * @param array $attrs
-     *  id int sometimes
+     *  id int
      *  url string URL to download media
-     *  file file sometimes File for upload. If empty - update Media
-     *  base64 base64 string for upload
-     *  is_active=true boolean sometimes
-     *  is_main=false boolean sometimes
-     *  weight int sometimes
-     *  title string sometimes
-     *  alt int sometimes
-     *  delete boolean sometimes If true - delete the file
+     *  file file File for upload
+     *  base64 string Base64 string
+     *  is_active=true boolean
+     *  is_main=false boolean
+     *  weight int
+     *  title string
+     *  alt int
+     *  delete boolean
+     *  user_id string
      * @param string $collectionName
      * @return null|\Spatie\MediaLibrary\Models\Media
      */
@@ -410,5 +410,13 @@ class MediaManager
     protected function comparisonBooleanValue($value): bool
     {
         return ($value === "true" || $value === "1" || $value === true || $value === 1);
+    }
+
+    /**
+     * @return string
+     */
+    protected function mediaClass(): string
+    {
+        return config('media-library.media_model');
     }
 }
