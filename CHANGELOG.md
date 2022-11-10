@@ -1,5 +1,12 @@
 # Changelog Laravel Metadialibrary extension
 
+## 5.0.0
+
+- Add temparary media
+- Add actions: upload, delete, clear
+- Add support save from base64
+- Remove change config in DB primary key
+
 ## 4.3.0 - 2021-08-11
 
 - Add sync - Media with new Model
