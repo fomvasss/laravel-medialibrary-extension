@@ -15,7 +15,7 @@ class ClearMediaTemporaryFiles
         
         $mediaTemporaryInstance::where('created_at', '<', now()->subDay())
             ->chunk(100, function (Collection $items) {
-                $items->each(fn ($item) => $temp->delete());
+                $items->each(fn ($item) => $item->delete());
             });
     }
 
