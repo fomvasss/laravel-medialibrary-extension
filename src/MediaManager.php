@@ -124,7 +124,7 @@ class MediaManager
                 $media->setAttribute('collection_name', $collectionName);
                 $media->save();
 
-                Artisan::call('media-library:regenerate', ['--ids' => $media->id]);
+                Artisan::call('media-library:regenerate', ['--ids' => $media->id, '--force' => true,]);
             }
             //$this->setExpandParams($media, $attrs, $collectionName);
         }
