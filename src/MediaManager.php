@@ -221,6 +221,20 @@ class MediaManager
             $media = $model->addMediaFromUrl($attrs['url'])
                 ->usingFileName($filename)
                 ->toMediaCollection($collectionName);
+        }
+
+        // Save from local path
+        elseif (empty($attrs['id']) && isset($attrs['path'])){
+            $filenameGenerator = config('media-library-extension.filename_generator');
+            $filename = $filenameGenerator::get($attrs['path']);
+
+            $media = $model->addMedia($attrs['path'])
+                ->usingFileName($filename)
+                ->toMediaCollection($collectionName);
+
+            if (!empty($attrs['remove_origin_path']) && is_file($attrs['remove_origin_path'])) {
+                unlink($attrs['remove_origin_path']);
+            }
 
         // Upload from base64
         } elseif (empty($attrs['id'])

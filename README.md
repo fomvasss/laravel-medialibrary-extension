@@ -17,17 +17,20 @@ composer require fomvasss/laravel-medialibrary-extension
 ```
 
 Publish `spatie/laravel-medialibrary` (if this has not been done before)
+
 ```bash
 php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="migrations"
 php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="config"
 ```
 
 Publish `fomvasss/laravel-medialibrary-extension`
+
 ```bash
 php artisan vendor:publish --provider="Fomvasss\MediaLibraryExtension\ServiceProvider"
 ```
 
 Run migration:
+
 ```bash
 php artisan migrate
 ```
@@ -43,9 +46,11 @@ Add facade to `config/app.php` to `aliases`:
 ## Integration in Eloquent models
 
 Implements interface:
+
  ```Fomvasss\MediaLibraryExtension\HasMedia\HasMedia```
 
 Usage in Eloquent models trait:
+
 ```Fomvasss\MediaLibraryExtension\HasMedia\InteractsWithMedia```
 
 ## Usage
@@ -58,7 +63,7 @@ In model `app/Models/Article.php`:
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Spatie\MediaLibrary\Models\Media;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Fomvasss\MediaLibraryExtension\HasMedia\HasMedia;
 use Fomvasss\MediaLibraryExtension\HasMedia\InteractsWithMedia;
 
