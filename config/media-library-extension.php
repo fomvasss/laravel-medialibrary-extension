@@ -21,14 +21,15 @@ return [
             'width' => 100,
             'height' => 100,
             'regex_perform_to_collections' => '/img|image|photo|gallery|scr|avatar/i',
+            'non_queued' => true,
         ],
     ],
-    
+
     'field_suffixes' => [
         'weight' => '_weight',   // request('YOUR_COLLECTION_NAME_weight')
         'deleted' => '_deleted', // request('YOUR_COLLECTION_NAME_deleted')
     ],
-    
+
     'deleted_request_input' => 'media_deleted', // request('media_deleted')
 
     /*
@@ -43,9 +44,9 @@ return [
      */
     'expand' => [
         'allowed_custom_properties' => [
-            'alt', 'title',  
+            'alt', 'title',
         ],
     ],
-    
+
     'temporary_upload_model' => \Fomvasss\MediaLibraryExtension\Models\MediaTemporary::class,
 ];

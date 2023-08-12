@@ -35,10 +35,13 @@ trait InteractsWithMedia
     {
         foreach (config('media-library-extension.default_conversions') as $conversionName => $params) {
             if (is_array($params) && count($params)) {
-                $this->addMediaConversion($conversionName)
+                $conversion = $this->addMediaConversion($conversionName)
                     ->quality($params['quantity'] ?? $this->getMediaQuality())
                     ->crop($params['crop-method'] ?? 'crop-center', $params['width'] ?? 100, $params['height'] ?? 100)
                     ->performOnCollections(...$this->getPerformOnImageCollections($params['regex_perform_to_collections'] ?? null));
+                if (!empty($params['non_queued'])) {
+                    $conversion->nonQueued();
+                }
             }
         }
     }
@@ -257,7 +260,7 @@ trait InteractsWithMedia
 
         return $manager->saveSimple($this, $uploadedFile, $collectionName);
     }
-    
+
     /**
      * @param $mediaIds
      */
