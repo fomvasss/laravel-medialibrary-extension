@@ -111,8 +111,12 @@ class HomeController extends Controller
     {
         $article = \App\Model\Article::findOrFail($id);
         
-        return $article->getFirstMediaUrl('image');
-        // also available all methods medialibrary!
+        $url = $article->getFirstMediaUrl('image');
+        $image = $article->getFirstMedia('image');
+        $alt = $image->getCustomProperty('alt');
+        $images = $article->getMedia('images'); // collection
+        // ...
+        // Also available all methods spatie/laravel-medialibrary!
     }   
 }
 ```
@@ -121,6 +125,9 @@ class HomeController extends Controller
 
 For upload files from collection name `images` you need send form with next data:
 ```html
+<input type="file" name="image">
+<input type="hidden" name="image_custom[15][alt]" value="This Alt image text">
+
 <input type="file" multiple="" name="images[]">
 ```
 
@@ -128,6 +135,7 @@ For set sort order file from collection name `images` and `id = 13, 15` you need
 ```html
 <input type="hidden" name="images_weight[15]" value="21">
 <input type="hidden" name="images_weight[13]" value="22">
+<input type="hidden" name="images_custom[13][alt]" value="Some text">
 ```
 
 For deleted file from collection name `images` and `id = 13, 15` you need send form with next data:

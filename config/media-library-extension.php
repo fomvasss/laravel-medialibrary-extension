@@ -28,6 +28,7 @@ return [
     'field_suffixes' => [
         'weight' => '_weight',   // request('YOUR_COLLECTION_NAME_weight')
         'deleted' => '_deleted', // request('YOUR_COLLECTION_NAME_deleted')
+        'custom' => '_custom', // request('YOUR_COLLECTION_NAME_custom')
     ],
 
     'deleted_request_input' => 'media_deleted', // request('media_deleted')

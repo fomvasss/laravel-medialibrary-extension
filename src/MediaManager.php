@@ -195,7 +195,7 @@ class MediaManager
      *  is_main=false boolean
      *  weight int
      *  title string
-     *  alt int
+     *  alt string
      *  delete boolean
      *  user_id string
      * @param string $collectionName
@@ -234,7 +234,7 @@ class MediaManager
             if (!empty($attrs['remove_origin_path']) && is_file($attrs['remove_origin_path'])) {
                 unlink($attrs['remove_origin_path']);
             }
-     
+
         // Upload from base64
         } elseif (empty($attrs['id'])
             && isset($attrs['base64'])
@@ -341,6 +341,8 @@ class MediaManager
             }
         }
 
+        $this->setCustomProperty($model, $request, $collectionName);
+
         $deletedSuffix = config('media-library-extension.field_suffixes.deleted', '_deleted');
         if (($ids = $request->get($collectionName . $deletedSuffix)) && is_array($ids)) {
             foreach ($ids as $mediaId) {
@@ -358,6 +360,7 @@ class MediaManager
      */
     protected function processSingle(Model $model, Request $request, $collectionName)
     {
+        $media = null;
         if (is_array($request->{$collectionName})) {
             if (isset($request->{$collectionName}['file']) && $request->{$collectionName}['file'] instanceof UploadedFile) {
                 $model->getMedia($collectionName)->each(function ($e) {
@@ -374,19 +377,36 @@ class MediaManager
                 $model->getMedia($collectionName)->each(function ($e) {
                     $e->delete();
                 });
-                $this->saveSimple($model, $request->file($collectionName), $collectionName);
+                $media = $this->saveSimple($model, $request->file($collectionName), $collectionName);
             } elseif (strpos($request->{$collectionName}, ';base64') !== false) {
                 $model->getMedia($collectionName)->each(function ($e) {
                     $e->delete();
                 });
-                $this->saveSimpleBase64($model, $request->{$collectionName}, $collectionName);
+                $media = $this->saveSimpleBase64($model, $request->{$collectionName}, $collectionName);
             }
         }
+
+        $this->setCustomProperty($model, $request, $collectionName, $media);
 
         $deletedSuffix = config('media-library-extension.field_suffixes.deleted', '_deleted');
         if ($mediaId = $request->get($collectionName . $deletedSuffix)) {
             if ($media = $model->media->firstWhere('id', $mediaId)) {
                 $media->delete();
+            }
+        }
+    }
+
+    public function setCustomProperty(Model $model, Request $request, string $collectionName, Media $mediaNew = null)
+    {
+        $customSuffix = config('media-library-extension.field_suffixes.custom', '_custom');
+        $props = Arr::wrap($request->get($collectionName . $customSuffix));
+
+        foreach ($props as $mediaId => $prop) {
+            if (\is_array($prop) && ($media = $mediaNew ?: $model->media->firstWhere('id', $mediaId))) {
+                foreach ($prop as $key => $val) {
+                    $media->setCustomProperty($key, $val);
+                }
+                $media->save();
             }
         }
     }
