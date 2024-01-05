@@ -126,7 +126,8 @@ class MediaManager
 
                 Artisan::call('media-library:regenerate', ['--ids' => $media->id, '--force' => true,]);
             }
-            //$this->setExpandParams($media, $attrs, $collectionName);
+            
+            $this->setExpandParams($media, $attrs, $collectionName);
         }
 
         return $media;
@@ -283,7 +284,7 @@ class MediaManager
             ? $this->comparisonBooleanValue($attrs['is_main'])
             : false;
         $userId = isset($attrs['user_id'])
-            ? intval($attrs['user_id'])
+            ? $attrs['user_id']
             : $this->userId;
 
         if ($isMain && ($model = $media->model)) {

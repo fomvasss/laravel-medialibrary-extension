@@ -20,7 +20,7 @@ return [
             'crop-method' => 'crop-center',
             'width' => 100,
             'height' => 100,
-            'regex_perform_to_collections' => '/img|image|photo|gallery|scr|avatar/i',
+            'regex_perform_to_collections' => '/img|image|photo|gallery|scr|logo|avatar/i',
             'non_queued' => true,
         ],
     ],
