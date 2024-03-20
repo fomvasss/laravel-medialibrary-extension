@@ -18,8 +18,8 @@ composer require fomvasss/laravel-medialibrary-extension
 
 Publish `spatie/laravel-medialibrary` (if this has not been done before)
 ```bash
-php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="migrations"
-php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="config"
+php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="medialibrary-migrations"
+php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="medialibrary-config"
 ```
 
 Publish `fomvasss/laravel-medialibrary-extension`
@@ -32,7 +32,7 @@ Run migration:
 php artisan migrate
 ```
 
-Add facade to `config/app.php` to `aliases`:
+Add facade to `config/app.php` to `aliases` (optional):
 
 ```php
 //...
@@ -101,7 +101,7 @@ class HomeController extends Controller
         $article = Article::create($request->validated());
     
         $article->mediaManage($request);
-        // Or usage Facage:
+        // Or usage Facade:
         \MediaLibrary::manage($article, $request);
         
         //...
