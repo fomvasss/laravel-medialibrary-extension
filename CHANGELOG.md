@@ -1,6 +1,6 @@
 # Changelog Laravel Metadialibrary extension
 
-## 6.0.0
+## 6.0.0 - 2024-06-05
 
 - Support Laravel 10+
 - Require Laravel Media Library 11
