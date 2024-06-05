@@ -24,7 +24,7 @@ class UploadMediaTemporaryFile
      */
     public function handle(array $attrs)
     {
-        $mediaTemporaryClass = config('media-library-extension.temporary_upload_model');
+        $mediaTemporaryClass = config('media-library-extension.temporary.model');
         $mediaTemporaryInstance = new $mediaTemporaryClass;
         $mediaTemporaryInstance->save();
 

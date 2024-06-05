@@ -1,6 +1,15 @@
 # Upgrading
 
+## From v5 to v6
+
+1. Change config `default_conversions.thumb.crop-method` set `\Spatie\Image\Enums\CropPosition::Center`
+2. Change config `temporary_upload_model` to `temporary.model`
+3. Add `temporary.cleartime`, example 60 minutes
+4. Rename used class `ClearMediaTemporaryFiles` to `ClearMediaTemporary`
+
 ## From v4 to v5
+
+1. Nothing to change :)
 
 ## From v3 to v4
 

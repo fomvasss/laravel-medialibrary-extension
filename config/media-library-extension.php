@@ -17,7 +17,7 @@ return [
     'default_conversions' => [
         'thumb' => [
             'quantity' => 75,
-            'crop-method' => 'crop-center',
+            'crop-method' => \Spatie\Image\Enums\CropPosition::Center,
             'width' => 100,
             'height' => 100,
             'regex_perform_to_collections' => '/img|image|photo|gallery|scr|logo|avatar/i',
@@ -49,5 +49,8 @@ return [
         ],
     ],
 
-    'temporary_upload_model' => \Fomvasss\MediaLibraryExtension\Models\MediaTemporary::class,
+    'temporary' => [
+        'model' => \Fomvasss\MediaLibraryExtension\Models\MediaTemporary::class,
+        'cleartime' => 60 * 24, // in minutes
+    ],
 ];

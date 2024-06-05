@@ -16,7 +16,7 @@ Extensions to the file management functionality of package [spatie/laravel-media
 composer require fomvasss/laravel-medialibrary-extension
 ```
 
-Publish `spatie/laravel-medialibrary` (if this has not been done before)
+Publish `spatie/laravel-medialibrary`
 ```bash
 php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="medialibrary-migrations"
 php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="medialibrary-config"
@@ -32,25 +32,23 @@ Run migration:
 php artisan migrate
 ```
 
-Add facade to `config/app.php` to `aliases` (optional):
-
-```php
-//...
-'MediaManager' => \Fomvasss\MediaLibraryExtension\Facade::class,
-//...
-```
-
 ## Integration in Eloquent models
 
 Implements interface:
- ```Fomvasss\MediaLibraryExtension\HasMedia\HasMedia```
+
+ ```
+ Fomvasss\MediaLibraryExtension\HasMedia\HasMedia
+ ```
 
 Usage in Eloquent models trait:
-```Fomvasss\MediaLibraryExtension\HasMedia\InteractsWithMedia```
 
-## Usage
+```
+Fomvasss\MediaLibraryExtension\HasMedia\InteractsWithMedia
+```
 
-In model `app/Models/Article.php`:
+## Usage example
+
+In Your model: `app/Models/Article.php`:
 
 ```php
 <?php
@@ -58,7 +56,8 @@ In model `app/Models/Article.php`:
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Spatie\MediaLibrary\Models\Media;
+use Spatie\Image\Enums\Fit;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Fomvasss\MediaLibraryExtension\HasMedia\HasMedia;
 use Fomvasss\MediaLibraryExtension\HasMedia\InteractsWithMedia;
 
@@ -75,12 +74,14 @@ class Article extends Model implements HasMedia
      */
     public function customMediaConversions(Media $media = null): void
     {
-        $this->addMediaCollection('main')
-            ->singleFile();
+      $this->addMediaConversion('main')
+            ->performOnCollections('image')
+            ->format('webp');   // Supported medialibrary: jpg, png, svg, webp, avif, pdf, mp4 , mov or webm 
 
-        $this->addMediaConversion('table')
-            ->format('jpg')->quality(93)
-            ->fit('crop', 360, 257);
+        $this->addMediaConversion('preview')
+            ->performOnCollections('image', 'images')
+            ->fit(Fit::Contain, 300, 300)
+            ->nonQueued();
     }
 }
 ```
@@ -120,6 +121,10 @@ class HomeController extends Controller
     }   
 }
 ```
+
+## Clear temporary downloads
+
+Run `\Fomvasss\MediaLibraryExtension\Actions\ClearMediaTemporary::doHandle()`
 
 ## Examples HTML form
 

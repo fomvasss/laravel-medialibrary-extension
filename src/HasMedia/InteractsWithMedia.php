@@ -37,7 +37,7 @@ trait InteractsWithMedia
             if (is_array($params) && count($params)) {
                 $conversion = $this->addMediaConversion($conversionName)
                     ->quality($params['quantity'] ?? $this->getMediaQuality())
-                    ->crop($params['crop-method'] ?? 'crop-center', $params['width'] ?? 100, $params['height'] ?? 100)
+                    ->crop(intval($params['width'] ?? 100), intval($params['height'] ?? 100), $params['crop-method'] ?? \Spatie\Image\Enums\CropPosition::Center)
                     ->performOnCollections(...$this->getPerformOnImageCollections($params['regex_perform_to_collections'] ?? null));
                 if (!empty($params['non_queued'])) {
                     $conversion->nonQueued();

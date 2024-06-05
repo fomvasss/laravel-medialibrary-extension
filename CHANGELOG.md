@@ -1,5 +1,12 @@
 # Changelog Laravel Metadialibrary extension
 
+## 6.0.0
+
+- Support Laravel 10+
+- Require Laravel Media Library 11
+- Unsupported Manipulation class (Spatie)
+- Add static method `ClearMediaTemporary::doHandle()`
+
 ## 5.0.0
 
 - Add temparary media
