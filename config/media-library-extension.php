@@ -12,14 +12,18 @@ return [
 
     /* ----------------------------------------------------------------
      |  Make conversions for all medias
+     |  https://spatie.be/docs/image/v3/image-manipulations/resizing-images
      | ----------------------------------------------------------------
      */
     'default_conversions' => [
         'thumb' => [
             'quantity' => 75,
-            'crop-method' => \Spatie\Image\Enums\CropPosition::Center,
+            //'crop' => \Spatie\Image\Enums\CropPosition::Center,
+            'fit' => \Spatie\Image\Enums\Fit::Crop,
             'width' => 100,
             'height' => 100,
+            'format' => 'webp',
+            'blur' => 0,
             'regex_perform_to_collections' => '/img|image|photo|gallery|scr|logo|avatar/i',
             'non_queued' => true,
         ],

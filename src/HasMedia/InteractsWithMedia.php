@@ -36,9 +36,18 @@ trait InteractsWithMedia
         foreach (config('media-library-extension.default_conversions') as $conversionName => $params) {
             if (is_array($params) && count($params)) {
                 $conversion = $this->addMediaConversion($conversionName)
-                    ->quality($params['quantity'] ?? $this->getMediaQuality())
-                    ->crop(intval($params['width'] ?? 100), intval($params['height'] ?? 100), $params['crop-method'] ?? \Spatie\Image\Enums\CropPosition::Center)
-                    ->performOnCollections(...$this->getPerformOnImageCollections($params['regex_perform_to_collections'] ?? null));
+                    ->quality($params['quantity'] ?? $this->getMediaQuality());
+
+                if ($cropPosition = Arr::get($params, 'crop') ?: Arr::get($params, 'crop-method')) {
+                    $conversion->crop(intval($params['width'] ?? 100), intval($params['height'] ?? 100), $cropPosition);
+                } elseif ($fit = Arr::get($params, 'fit')) {
+                    $conversion->fit($fit, intval($params['width'] ?? 100), intval($params['height'] ?? 100));
+                }
+
+                $conversion->when($format = Arr::get($params, 'format'))->format($format);
+                $conversion->when($blur = Arr::get($params, 'blur'))->blur($blur);
+                $conversion->performOnCollections(...$this->getPerformOnImageCollections($params['regex_perform_to_collections'] ?? null));
+
                 if (!empty($params['non_queued'])) {
                     $conversion->nonQueued();
                 }
