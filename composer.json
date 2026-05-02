@@ -17,6 +17,16 @@
         }
     ],
     "license": "MIT",
+    "funding": [
+        {
+            "type": "custom",
+            "url": "https://send.monobank.ua/jar/5xsqtHvVrY"
+        },
+        {
+            "type": "ko_fi",
+            "url": "https://ko-fi.com/fomvasss"
+        }
+    ],
     "require": {
         "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
         "spatie/laravel-medialibrary": "^11.0"
