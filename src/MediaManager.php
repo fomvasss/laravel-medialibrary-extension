@@ -23,6 +23,8 @@ class MediaManager
      */
     public function manage(Model $model, Request $request)
     {
+        $this->userId = null;
+
         if (($user = $request->user()) && config('media-library-extension.use_auth_user')) {
             $this->userId = $user->id;
         }
@@ -50,6 +52,8 @@ class MediaManager
      */
     public function manageRefresh(Model $model, array $data, $user = null)
     {
+        $this->userId = null;
+
         if ($user && config('media-library-extension.use_auth_user')) {
             $this->userId = $user->id;
         }
