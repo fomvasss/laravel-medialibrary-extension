@@ -56,6 +56,8 @@ class MediaManager
 
         if ($user && config('media-library-extension.use_auth_user')) {
             $this->userId = $user->id;
+        } elseif (($user = auth()->user()) && config('media-library-extension.use_auth_user')) {
+            $this->userId = $user->id;
         }
 
         // Multiple
@@ -154,8 +156,8 @@ class MediaManager
             ->usingFileName($filename)
             ->toMediaCollection($collectionName);
 
-        if ($this->userId) {
-            $media->setAttribute('user_id', $this->userId);
+        if ($userId = $this->resolveUserId()) {
+            $media->setAttribute('user_id', $userId);
             $media->save();
         }
         return $media;
@@ -179,8 +181,8 @@ class MediaManager
             ->usingFileName($filename)
             ->toMediaCollection($collectionName);
 
-        if ($this->userId) {
-            $media->setAttribute('user_id', $this->userId);
+        if ($userId = $this->resolveUserId()) {
+            $media->setAttribute('user_id', $userId);
             $media->save();
         }
 
@@ -287,9 +289,7 @@ class MediaManager
         $isMain = isset($attrs['is_main'])
             ? $this->comparisonBooleanValue($attrs['is_main'])
             : false;
-        $userId = isset($attrs['user_id'])
-            ? $attrs['user_id']
-            : $this->userId;
+        $userId = $this->resolveUserId($attrs['user_id'] ?? null);
 
         if ($isMain && ($model = $media->model)) {
             // Unset is_main other media collecion for this model
@@ -439,6 +439,20 @@ class MediaManager
                 }
             }
         }
+    }
+
+    protected function resolveUserId(mixed $explicit = null): mixed
+    {
+        if ($explicit) {
+            return $explicit;
+        }
+        if ($this->userId) {
+            return $this->userId;
+        }
+        if (config('media-library-extension.use_auth_user')) {
+            return auth()->id();
+        }
+        return null;
     }
 
     /**
