@@ -1,5 +1,11 @@
 # Changelog Laravel Metadialibrary extension
 
+## 6.3.2 - 2026-06-15
+
+### Fixed
+
+- Added missing `use_auth_user` key to config file (defaults to `false`)
+
 ## 6.0.0 - 2024-06-05
 
 - Support Laravel 10+
