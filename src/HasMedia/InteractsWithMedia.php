@@ -22,7 +22,7 @@ trait InteractsWithMedia
      *
      * @param Media $media
      */
-    public function customMediaConversions(Media $media = null): void
+    public function customMediaConversions(?Media $media = null): void
     {
         //...
     }
@@ -31,7 +31,7 @@ trait InteractsWithMedia
      * @param Media|null $media
      * @throws \Spatie\Image\Exceptions\InvalidManipulation
      */
-    public function defaultRegisterMediaConversions(Media $media = null)
+    public function defaultRegisterMediaConversions(?Media $media = null)
     {
         foreach (config('media-library-extension.default_conversions') as $conversionName => $params) {
             if (is_array($params) && count($params)) {
@@ -59,7 +59,7 @@ trait InteractsWithMedia
      * @param Media $media
      * @throws \Spatie\Image\Exceptions\InvalidManipulation
      */
-    public function registerMediaConversions(Media $media = null): void
+    public function registerMediaConversions(?Media $media = null): void
     {
         $this->defaultRegisterMediaConversions($media);
 
@@ -208,7 +208,7 @@ trait InteractsWithMedia
     /**
      * @return array
      */
-    protected function getPerformOnImageCollections(string $pattern = null): array
+    protected function getPerformOnImageCollections(?string $pattern = null): array
     {
         $mediaFields = array_values(array_merge($this->getMediaMultipleCollections(), $this->getMediaSingleCollections()));
         $pattern = $pattern ?: '/img|image|photo|gallery|avatar/scr/i';

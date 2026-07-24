@@ -12,7 +12,7 @@ interface HasMedia extends \Spatie\MediaLibrary\HasMedia
      * @param Media|null $media
      * @return mixed
      */
-    public function customMediaConversions(Media $media = null): void;
+    public function customMediaConversions(?Media $media = null): void;
     
     /**
      * @return array

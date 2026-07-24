@@ -401,7 +401,7 @@ class MediaManager
         }
     }
 
-    public function setCustomProperty(Model $model, Request $request, string $collectionName, Media $mediaNew = null)
+    public function setCustomProperty(Model $model, Request $request, string $collectionName, ?Media $mediaNew = null)
     {
         $customSuffix = config('media-library-extension.field_suffixes.custom', '_custom');
         $props = Arr::wrap($request->get($collectionName . $customSuffix));
