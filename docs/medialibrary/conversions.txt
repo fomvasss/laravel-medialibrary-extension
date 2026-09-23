@@ -1,0 +1,6 @@
+            ['name' => 'fit_fil', 'fit' => [\Spatie\Image\Enums\Fit::Fill, 320, 480], 'format' => 'webp', 'performOn' => ['image']],
+            ['name' => 'fil_max', 'fit' => [\Spatie\Image\Enums\Fit::FillMax, 320, 480], 'format' => 'webp', 'performOn' => ['image']],
+            ['name' => 'crop', 'fit' => [\Spatie\Image\Enums\Fit::Crop, 320, 480], 'format' => 'webp', 'performOn' => ['image']],
+            ['name' => 'contain', 'fit' => [\Spatie\Image\Enums\Fit::Contain, 320, 480], 'format' => 'webp', 'performOn' => ['image']],
+            ['name' => 'stretch', 'fit' => [\Spatie\Image\Enums\Fit::Stretch, 320, 480], 'format' => 'webp', 'performOn' => ['image']],
+            ['name' => 'max', 'fit' => [\Spatie\Image\Enums\Fit::Max, 320, 480], 'format' => 'webp', 'performOn' => ['image']],

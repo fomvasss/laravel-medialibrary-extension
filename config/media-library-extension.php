@@ -41,6 +41,16 @@ return [
     'use_auth_user' => false,
 
     /*
+     * Restricts manageRefresh() / mediaManageRefresh() to data that belongs to the model.
+     * Enable it when the data comes from a client (API) rather than a trusted admin panel.
+     *  - attach by id: only media of this model or a temporary upload
+     *  - delete (`delete` flag, `media_deleted`): only media of this model
+     *  - `user_id` from the data is ignored
+     * Other ids are silently skipped. Who may attach a given temporary upload is up to the project.
+     */
+    'strict_refresh' => false,
+
+    /*
      *  id int|null
      *  file|null File for upload. If empty - update Media fields
      *  is_active=true boolean sometimes

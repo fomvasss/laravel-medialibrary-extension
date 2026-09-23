@@ -82,7 +82,9 @@ class MediaManager
         if ($arr = Arr::get($data, config('media-library-extension.deleted_request_input'))) {
             $needDeleted = is_array($arr) ? $arr : [$arr];
             foreach ($needDeleted as $id) {
-                Media::find($id)?->delete();
+                $this->strictRefresh()
+                    ? $this->findModelMedia($model, $id)?->delete()
+                    : Media::find($id)?->delete();
             }
         }
     }
@@ -104,17 +106,29 @@ class MediaManager
     public function manageRefreshItem(Model $model, array $attrs, string $collectionName)
     {
         $media = null;
+        $strict = $this->strictRefresh();
+
+        // In strict mode the owner is never taken from the input data
+        if ($strict) {
+            unset($attrs['user_id']);
+        }
 
         // Delete media
         if (isset($attrs['delete']) && $this->comparisonBooleanValue($attrs['delete'])) {
-            if (!empty($attrs['id']) && ($media = Media::find($attrs['id']))) {
-                $media->delete();
+            if (!empty($attrs['id'])) {
+                $media = $strict ? $this->findModelMedia($model, $attrs['id']) : Media::find($attrs['id']);
+                $media?->delete();
             }
 
             return $media;
 
         // Upd params, Model & Regenerate conversions
-        } elseif (isset($attrs['id']) && ($media = $this->mediaClass()::find($attrs['id']))) {
+        } elseif (isset($attrs['id']) && ($media = $this->findMedia($attrs['id']))) {
+            // In strict mode only own media of the model or a temporary upload can be attached
+            if ($strict && !$this->isModelMedia($media, $model) && !$this->isTemporaryMedia($media)) {
+                return null;
+            }
+
             // Sync new Media with Model
             if ($media->model_type !== $model->getMorphClass()) {
 
@@ -470,5 +484,60 @@ class MediaManager
     protected function mediaClass(): string
     {
         return config('media-library.media_model');
+    }
+
+    protected function strictRefresh(): bool
+    {
+        return (bool) config('media-library-extension.strict_refresh', false);
+    }
+
+    protected function findMedia(mixed $id): ?Media
+    {
+        if (!$this->isValidMediaId($id)) {
+            return null;
+        }
+
+        return $this->mediaClass()::find($id);
+    }
+
+    protected function findModelMedia(Model $model, mixed $id): ?Media
+    {
+        if (!$this->isValidMediaId($id)) {
+            return null;
+        }
+
+        return $model->media()->whereKey($id)->first();
+    }
+
+    protected function isModelMedia(Media $media, Model $model): bool
+    {
+        return $media->model_type === $model->getMorphClass()
+            && (string) $media->model_id === (string) $model->getKey();
+    }
+
+    protected function isTemporaryMedia(Media $media): bool
+    {
+        $temporaryClass = config('media-library-extension.temporary.model');
+
+        return $media->model_type === (new $temporaryClass)->getMorphClass();
+    }
+
+    /**
+     * Arbitrary input must not reach the query as a key: on PostgreSQL a non-uuid string
+     * for a uuid column throws instead of returning nothing
+     */
+    protected function isValidMediaId(mixed $id): bool
+    {
+        if (!is_string($id) && !is_int($id)) {
+            return false;
+        }
+
+        $mediaClass = $this->mediaClass();
+
+        if (in_array(\Illuminate\Database\Eloquent\Concerns\HasUuids::class, class_uses_recursive($mediaClass))) {
+            return Str::isUuid((string) $id);
+        }
+
+        return true;
     }
 }

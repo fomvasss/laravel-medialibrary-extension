@@ -132,6 +132,37 @@ class HomeController extends Controller
 }
 ```
 
+## Manage media from API data
+
+For JSON APIs the client first uploads a file as a temporary media (`UploadMediaTemporaryFile`), then passes its `id` when saving the model:
+
+```php
+$article->mediaManageRefresh($request->only('image', 'files', 'media_deleted'));
+```
+
+```json
+{
+    "image": {"id": "<temporary media id>"},
+    "files": [{"id": "<media id>", "title": "Doc"}, {"id": "<media id>", "delete": true}],
+    "media_deleted": ["<media id>"]
+}
+```
+
+### Strict mode
+
+By default `mediaManageRefresh()` trusts every `id` in the data: any media can be attached to the model or deleted. That is fine for a trusted admin panel, but not for data coming from a client. Enable strict mode in `config/media-library-extension.php`:
+
+```php
+'strict_refresh' => true,
+```
+
+With it:
+- attach by `id` works only for media of this model or a temporary upload
+- `delete` and `media_deleted` remove only media of this model
+- `user_id` from the data is ignored
+
+Other ids are silently skipped. Who may attach a particular temporary upload (e.g. only its uploader) is checked by the project — validate it in the request before calling `mediaManageRefresh()`.
+
 ## Clear temporary downloads
 
 Run `\Fomvasss\MediaLibraryExtension\Actions\ClearMediaTemporary::doHandle()`

@@ -1,5 +1,19 @@
 # Changelog Laravel Metadialibrary extension
 
+## 6.4.0 - 2026-09-23
+
+### Added
+
+- `strict_refresh` config option (default `false`). When enabled, `mediaManageRefresh()` attaches only media of the model or temporary uploads, deletes (`delete`, `media_deleted`) only media of the model and ignores `user_id` from the data. Other ids are skipped without an error
+
+### Security
+
+- `mediaManageRefresh()` trusts every media `id` it receives: with client (API) data anyone can attach someone else's media to their model or delete any media. Enable `strict_refresh` in projects that pass request data to it
+
+### Fixed
+
+- `mediaManageRefresh()`: attaching by an invalid id no longer fails on PostgreSQL for a uuid media key — the item is skipped (in strict mode this also applies to deletion)
+
 ## 6.3.2 - 2026-06-15
 
 ### Fixed
