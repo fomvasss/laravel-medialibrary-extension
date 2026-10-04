@@ -341,12 +341,14 @@ class MediaManager
      */
     protected function processMultiple(Model $model, Request $request, $collectionName)
     {
+        $value = $this->requestValue($request, $collectionName);
+
         if ($request->hasFile($collectionName)) {
             foreach ($request->file($collectionName) as $file) {
                 $this->saveSimple($model, $file, $collectionName);
             }
-        } elseif (is_array($request->{$collectionName})) {
-            foreach ($request->{$collectionName} ?? [] as $attrs) {
+        } elseif (is_array($value)) {
+            foreach ($value as $attrs) {
                 $this->saveExpand($model, $attrs, $collectionName);
             }
         }
@@ -380,28 +382,30 @@ class MediaManager
     protected function processSingle(Model $model, Request $request, $collectionName)
     {
         $media = null;
-        if (is_array($request->{$collectionName})) {
-            if (isset($request->{$collectionName}['file']) && $request->{$collectionName}['file'] instanceof UploadedFile) {
+        $value = $this->requestValue($request, $collectionName);
+
+        if (is_array($value)) {
+            if (isset($value['file']) && $value['file'] instanceof UploadedFile) {
                 $model->getMedia($collectionName)->each(function ($e) {
                     $e->delete();
                 });
             }
 
-            if ($request->{$collectionName}) {
-                $this->saveExpand($model, $request->{$collectionName}, $collectionName);
+            if ($value) {
+                $this->saveExpand($model, $value, $collectionName);
             }
-        } elseif ($request->{$collectionName}) {
+        } elseif ($value) {
 
-            if ($request->{$collectionName} instanceof UploadedFile) {
+            if ($value instanceof UploadedFile) {
                 $model->getMedia($collectionName)->each(function ($e) {
                     $e->delete();
                 });
                 $media = $this->saveSimple($model, $request->file($collectionName), $collectionName);
-            } elseif (strpos($request->{$collectionName}, ';base64') !== false) {
+            } elseif (strpos($value, ';base64') !== false) {
                 $model->getMedia($collectionName)->each(function ($e) {
                     $e->delete();
                 });
-                $media = $this->saveSimpleBase64($model, $request->{$collectionName}, $collectionName);
+                $media = $this->saveSimpleBase64($model, $value, $collectionName);
             }
         }
 
@@ -413,6 +417,15 @@ class MediaManager
                 $media->delete();
             }
         }
+    }
+
+    /**
+     * Collection data from request fields and files. Not $request->{$collectionName}: a collection
+     * named like a Symfony Request property (files, query, request, headers...) returns that property instead
+     */
+    protected function requestValue(Request $request, string $collectionName)
+    {
+        return $request->all()[$collectionName] ?? null;
     }
 
     public function setCustomProperty(Model $model, Request $request, string $collectionName, ?Media $mediaNew = null)
