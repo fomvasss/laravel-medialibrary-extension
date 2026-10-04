@@ -19,16 +19,6 @@
 
 ![поле медіа lte3](docs/images/lte3-media-field.png)
 
-## Підтримка
-
-Якщо пакет вам корисний, можна підтримати його розвиток:
-
-[![Monobank](https://img.shields.io/badge/Donate-Monobank-black)](https://send.monobank.ua/jar/5xsqtHvVrY)
-[![Ko-Fi](https://img.shields.io/badge/Donate-Ko--fi-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/fomvasss)
-[![USDT TRC20](https://img.shields.io/badge/Donate-USDT%20TRC20-26A17B?logo=tether&logoColor=white)](https://link.trustwallet.com/send?coin=195&address=THLgp6DxiAtbNHvgnKV56vk1L38UuUagKf&token_id=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t)
-
-> Адреса USDT TRC20: `THLgp6DxiAtbNHvgnKV56vk1L38UuUagKf`
-
 ## Зміст
 
 - [Вимоги](#вимоги)
@@ -48,6 +38,7 @@
 - [Імена файлів](#імена-файлів)
 - [Конфігурація](#конфігурація)
 - [Оновлення версій](#оновлення-версій)
+- [Підтримка](#підтримка)
 
 ## Вимоги
 
@@ -409,3 +400,13 @@ $media->user_id;   // власник, якщо ввімкнено `use_auth_user
 
 - [spatie/laravel-medialibrary](https://github.com/spatie/laravel-medialibrary)
 - [fomvasss/laravel-lte3](https://github.com/fomvasss/laravel-lte3) — поля адмінки для цього пакета
+
+## Підтримка
+
+Якщо пакет вам корисний, можна підтримати його розвиток:
+
+[![Monobank](https://img.shields.io/badge/Donate-Monobank-black)](https://send.monobank.ua/jar/5xsqtHvVrY)
+[![Ko-Fi](https://img.shields.io/badge/Donate-Ko--fi-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/fomvasss)
+[![USDT TRC20](https://img.shields.io/badge/Donate-USDT%20TRC20-26A17B?logo=tether&logoColor=white)](https://link.trustwallet.com/send?coin=195&address=THLgp6DxiAtbNHvgnKV56vk1L38UuUagKf&token_id=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t)
+
+> Адреса USDT TRC20: `THLgp6DxiAtbNHvgnKV56vk1L38UuUagKf`
