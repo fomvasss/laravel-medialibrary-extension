@@ -1,5 +1,11 @@
 # Changelog Laravel Metadialibrary extension
 
+## 6.4.1 - 2026-10-04
+
+### Fixed
+
+- `mediaManage()`: the expand format (`files[N][id|file]`, `weight`, `delete`, custom properties) was silently ignored for a collection named like a Symfony `Request` property — `files`, `query`, `request`, `headers` and others. Collection data is now read from the request fields and files
+
 ## 6.4.0 - 2026-09-23
 
 ### Added
