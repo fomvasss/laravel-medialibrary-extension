@@ -2,6 +2,7 @@
 
 namespace Fomvasss\MediaLibraryExtension;
 
+use Fomvasss\MediaLibraryExtension\Actions\UploadMediaTemporaryFile;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -13,6 +14,11 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 class MediaManager
 {
     protected $userId = null;
+
+    /**
+     * Who performs mediaManageRefresh(): the owner check of temporary uploads in strict mode
+     */
+    protected $actorId = null;
 
     /**
      * Manage (upload, update, delete) files & save Media with Request object.
@@ -53,6 +59,7 @@ class MediaManager
     public function manageRefresh(Model $model, array $data, $user = null)
     {
         $this->userId = null;
+        $this->actorId = $user?->getKey() ?? auth()->id();
 
         if ($user && config('media-library-extension.use_auth_user')) {
             $this->userId = $user->id;
@@ -124,8 +131,8 @@ class MediaManager
 
         // Upd params, Model & Regenerate conversions
         } elseif (isset($attrs['id']) && ($media = $this->findMedia($attrs['id']))) {
-            // In strict mode only own media of the model or a temporary upload can be attached
-            if ($strict && !$this->isModelMedia($media, $model) && !$this->isTemporaryMedia($media)) {
+            // In strict mode only own media of the model or an own temporary upload can be attached
+            if ($strict && !$this->isModelMedia($media, $model) && !($this->isTemporaryMedia($media) && $this->isTemporaryOwner($media))) {
                 return null;
             }
 
@@ -142,6 +149,7 @@ class MediaManager
                 $media->setAttribute('model_id', $model->getKey());
                 $media->setAttribute('model_type', $model->getMorphClass());
                 $media->setAttribute('collection_name', $collectionName);
+                $media->forgetCustomProperty(UploadMediaTemporaryFile::SESSION_PROPERTY);
                 $media->save();
 
                 Artisan::call('media-library:regenerate', ['--ids' => $media->id, '--force' => true,]);
@@ -533,6 +541,24 @@ class MediaManager
         $temporaryClass = config('media-library-extension.temporary.model');
 
         return $media->model_type === (new $temporaryClass)->getMorphClass();
+    }
+
+    /**
+     * Upload by a user — only the same user; anonymous upload from a session — only the same session;
+     * without both (stateless API) the id itself is the only secret, as before
+     */
+    protected function isTemporaryOwner(Media $media): bool
+    {
+        if (!empty($media->user_id)) {
+            return (string) $media->user_id === (string) $this->actorId;
+        }
+
+        if ($hash = $media->getCustomProperty(UploadMediaTemporaryFile::SESSION_PROPERTY)) {
+            return request()->hasSession()
+                && hash_equals($hash, UploadMediaTemporaryFile::sessionHash(request()->session()->getId()));
+        }
+
+        return true;
     }
 
     /**

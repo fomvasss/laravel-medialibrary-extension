@@ -7,6 +7,12 @@ use Illuminate\Support\Arr;
 class UploadMediaTemporaryFile
 {
     /**
+     * Custom property with a hash of the uploader's session for an upload without user_id.
+     * In strict refresh mode such an upload is attached only from the same session
+     */
+    const SESSION_PROPERTY = 'temporary_session';
+
+    /**
      * @param array $attrs
      *  id int
      *  url string URL to download media
@@ -29,7 +35,18 @@ class UploadMediaTemporaryFile
         $mediaTemporaryInstance->save();
 
         $collectionName = Arr::get($attrs, 'collection_name', 'default');
-        
-        return $mediaTemporaryInstance->mediaSaveExpand($attrs, $collectionName);
+
+        $media = $mediaTemporaryInstance->mediaSaveExpand($attrs, $collectionName);
+
+        if ($media && empty($media->user_id) && request()->hasSession()) {
+            $media->setCustomProperty(self::SESSION_PROPERTY, self::sessionHash(request()->session()->getId()))->save();
+        }
+
+        return $media;
+    }
+
+    public static function sessionHash(string $sessionId): string
+    {
+        return hash('sha256', $sessionId);
     }
 }

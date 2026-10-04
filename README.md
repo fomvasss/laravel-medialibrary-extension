@@ -157,11 +157,14 @@ By default `mediaManageRefresh()` trusts every `id` in the data: any media can b
 ```
 
 With it:
-- attach by `id` works only for media of this model or a temporary upload
+- attach by `id` works only for media of this model or an own temporary upload:
+  - uploaded with `user_id` — only by the same user (the `$user` argument of `mediaManageRefresh()` or the authenticated one)
+  - uploaded without `user_id` in a request with a session (public form) — only from the same session
+  - uploaded without both (stateless API) — by anyone who knows the `id`, so keep media keys unguessable (uuid)
 - `delete` and `media_deleted` remove only media of this model
 - `user_id` from the data is ignored
 
-Other ids are silently skipped. Who may attach a particular temporary upload (e.g. only its uploader) is checked by the project — validate it in the request before calling `mediaManageRefresh()`.
+Other ids are silently skipped.
 
 ## Clear temporary downloads
 

@@ -8,6 +8,7 @@ use Fomvasss\MediaLibraryExtension\Actions\UploadMediaTemporaryFile;
 use Fomvasss\MediaLibraryExtension\Tests\Article;
 use Fomvasss\MediaLibraryExtension\Tests\Page;
 use Fomvasss\MediaLibraryExtension\Tests\TestCase;
+use Illuminate\Foundation\Auth\User;
 use Illuminate\Http\UploadedFile;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -104,9 +105,49 @@ class ManageRefreshTest extends TestCase
         $article = Article::create();
         $temporary = $this->temporaryUpload(userId: 10);
 
-        $article->mediaManageRefresh(['files' => [['id' => $temporary->id, 'user_id' => 99]]]);
+        $article->mediaManageRefresh(['files' => [['id' => $temporary->id, 'user_id' => 99]]], $this->user(10));
 
+        $this->assertTrue($this->belongsTo($temporary, $article));
         $this->assertSame(10, (int) $temporary->refresh()->user_id);
+    }
+
+    public function testStrictSkipsTemporaryUploadOfAnotherUser()
+    {
+        $this->strict();
+        $article = Article::create();
+        $temporary = $this->temporaryUpload(userId: 10);
+
+        $article->mediaManageRefresh(['files' => [['id' => $temporary->id]]], $this->user(11));
+        $article->mediaManageRefresh(['files' => [['id' => $temporary->id]]]);
+
+        $this->assertFalse($this->belongsTo($temporary, $article));
+    }
+
+    public function testStrictAttachesAnonymousUploadOnlyFromItsSession()
+    {
+        $this->strict();
+        $article = Article::create();
+        $this->useSession('first');
+        $temporary = $this->temporaryUpload();
+
+        $this->useSession('second');
+        $article->mediaManageRefresh(['files' => [['id' => $temporary->id]]]);
+        $this->assertFalse($this->belongsTo($temporary, $article));
+
+        $this->useSession('first');
+        $article->mediaManageRefresh(['files' => [['id' => $temporary->id]]]);
+        $this->assertTrue($this->belongsTo($temporary, $article));
+        $this->assertNull($temporary->getCustomProperty(UploadMediaTemporaryFile::SESSION_PROPERTY));
+    }
+
+    public function testDefaultModeIgnoresUploadOwner()
+    {
+        $article = Article::create();
+        $temporary = $this->temporaryUpload(userId: 10);
+
+        $article->mediaManageRefresh(['files' => [['id' => $temporary->id]]], $this->user(11));
+
+        $this->assertTrue($this->belongsTo($temporary, $article));
     }
 
     public function testStrictSkipsInvalidIds()
@@ -138,6 +179,18 @@ class ManageRefreshTest extends TestCase
             'file' => UploadedFile::fake()->create('upload.txt', 1),
             'user_id' => $userId,
         ]));
+    }
+
+    private function user(int $id): User
+    {
+        return (new User)->forceFill(['id' => $id]);
+    }
+
+    private function useSession(string $id): void
+    {
+        $session = $this->app['session']->driver('array');
+        $session->setId(str_pad($id, 40, 'x'));
+        $this->app['request']->setLaravelSession($session);
     }
 
     private function belongsTo(Media $media, Article $article): bool
