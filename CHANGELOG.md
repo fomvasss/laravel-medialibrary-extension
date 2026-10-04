@@ -1,5 +1,11 @@
 # Changelog Laravel Metadialibrary extension
 
+## 6.5.0 - 2026-10-04
+
+### Security
+
+- `strict_refresh`: `mediaManageRefresh()` attaches only own temporary uploads. An upload with `user_id` — only by the same user (the `$user` argument or the authenticated one); an anonymous upload made in a request with a session — only from the same session (`UploadMediaTemporaryFile` stores a session hash in the `temporary_session` custom property, removed on attach). Uploads without both (stateless API) behave as before. Previously any temporary upload was accepted by its `id`
+
 ## 6.4.1 - 2026-10-04
 
 ### Fixed
