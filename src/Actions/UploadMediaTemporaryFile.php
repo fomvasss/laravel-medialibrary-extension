@@ -8,7 +8,9 @@ class UploadMediaTemporaryFile
 {
     /**
      * Custom property with a hash of the uploader's session for an upload without user_id.
-     * In strict refresh mode such an upload is attached only from the same session
+     * In strict refresh mode such an upload is attached only from the same session.
+     * Set only when the request came with the session cookie: a session started for a request
+     * without cookies (e.g. Sanctum stateful API with a Bearer client) does not survive to the next one
      */
     const SESSION_PROPERTY = 'temporary_session';
 
@@ -38,7 +40,7 @@ class UploadMediaTemporaryFile
 
         $media = $mediaTemporaryInstance->mediaSaveExpand($attrs, $collectionName);
 
-        if ($media && empty($media->user_id) && request()->hasSession()) {
+        if ($media && empty($media->user_id) && request()->hasPreviousSession()) {
             $media->setCustomProperty(self::SESSION_PROPERTY, self::sessionHash(request()->session()->getId()))->save();
         }
 

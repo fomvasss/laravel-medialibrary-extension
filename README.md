@@ -159,7 +159,7 @@ By default `mediaManageRefresh()` trusts every `id` in the data: any media can b
 With it:
 - attach by `id` works only for media of this model or an own temporary upload:
   - uploaded with `user_id` — only by the same user (the `$user` argument of `mediaManageRefresh()` or the authenticated one)
-  - uploaded without `user_id` in a request with a session (public form) — only from the same session
+  - uploaded without `user_id` in a request that came with the session cookie (public web form) — only from the same session. A session started for a request without cookies (e.g. Sanctum stateful API called with a Bearer token) is ignored: it does not survive to the next request
   - uploaded without both (stateless API) — by anyone who knows the `id`, so keep media keys unguessable (uuid)
 - `delete` and `media_deleted` remove only media of this model
 - `user_id` from the data is ignored

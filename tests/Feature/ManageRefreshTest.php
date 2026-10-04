@@ -140,6 +140,19 @@ class ManageRefreshTest extends TestCase
         $this->assertNull($temporary->getCustomProperty(UploadMediaTemporaryFile::SESSION_PROPERTY));
     }
 
+    public function testStrictIgnoresSessionWithoutCookie()
+    {
+        $this->strict();
+        $article = Article::create();
+        $this->useSession('first', withCookie: false);
+        $temporary = $this->temporaryUpload();
+
+        $this->useSession('second', withCookie: false);
+        $article->mediaManageRefresh(['files' => [['id' => $temporary->id]]]);
+
+        $this->assertTrue($this->belongsTo($temporary, $article));
+    }
+
     public function testDefaultModeIgnoresUploadOwner()
     {
         $article = Article::create();
@@ -186,11 +199,18 @@ class ManageRefreshTest extends TestCase
         return (new User)->forceFill(['id' => $id]);
     }
 
-    private function useSession(string $id): void
+    /**
+     * $withCookie — запит прийшов з cookie сесії; без нього сесію стартували лише для цього запиту
+     */
+    private function useSession(string $id, bool $withCookie = true): void
     {
         $session = $this->app['session']->driver('array');
         $session->setId(str_pad($id, 40, 'x'));
-        $this->app['request']->setLaravelSession($session);
+        $request = $this->app['request'];
+        $request->setLaravelSession($session);
+        $withCookie
+            ? $request->cookies->set($session->getName(), $session->getId())
+            : $request->cookies->remove($session->getName());
     }
 
     private function belongsTo(Media $media, Article $article): bool
