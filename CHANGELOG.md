@@ -1,5 +1,11 @@
 # Changelog Laravel Metadialibrary extension
 
+## 6.5.1 - 2026-10-04
+
+### Fixed
+
+- `strict_refresh`: an anonymous temporary upload is bound to the session only when the request came with the session cookie. A session started for a request without cookies (e.g. Sanctum `EnsureFrontendRequestsAreStateful` with a Bearer client) is new on every request, so in 6.5.0 such uploads could not be attached by the next request
+
 ## 6.5.0 - 2026-10-04
 
 ### Security
