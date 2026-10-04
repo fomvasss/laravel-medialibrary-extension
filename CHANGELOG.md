@@ -1,5 +1,11 @@
 # Changelog Laravel Metadialibrary extension
 
+## Unreleased
+
+### Documentation
+
+- README rewritten: form formats (simple and expand) with HTML examples, row keys, validation rules, lte3 admin fields with screenshots, API flow with temporary uploads, reading helpers, conversions with `Fit` examples, file name generators, config reference. Ukrainian version — `README.uk.md`. Fixed the facade name in the example: `\MediaManager`, not `\MediaLibrary`
+
 ## 6.5.1 - 2026-10-04
 
 ### Fixed
